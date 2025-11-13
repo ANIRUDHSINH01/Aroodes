@@ -28,7 +28,7 @@ export default {
       }
     } catch (error) {
       console.error('Error in lose-control command:', error);
-      
+
       if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({
           content: `❌ Error: ${error.message}`,
@@ -41,34 +41,36 @@ export default {
 
 async function checkLoseControl(interaction) {
   await interaction.deferReply();
-  
+
   const userData = await getUser(interaction.user.id);
 
   if (!userData || !userData.pathway) {
     const embed = new EmbedBuilder()
       .setColor(0xff6b6b)
       .setTitle('❌ Not a Beyonder')
-      .setDescription(
-        'You are not a Beyonder yet!\n\n' +
-        'You must have a pathway assigned before you can check for lose control.\n' +
-        'Ask an administrator to assign you a pathway.'
-      );
+      .setDescription(`
+You are not a Beyonder yet!
+
+You must have a pathway assigned before you can check for lose control.
+Ask an administrator to assign you a pathway.
+      `);
 
     return await interaction.editReply({ embeds: [embed] });
   }
 
   const pathway = PATHWAYS[userData.pathway.toUpperCase()];
   const seqInfo = getSequence(pathway, userData.sequence);
-  
+
   // Sequence 0 (True Gods) cannot lose control
   if (userData.sequence === 0) {
     const embed = new EmbedBuilder()
       .setColor(0xffd700)
       .setTitle('⚜️ True God Immunity')
-      .setDescription(
-        'As a **True God** at Sequence 0, you are beyond the mortal concept of losing control.\n\n' +
-        'The beyonder characteristics within you are perfectly harmonized with your spiritual body.'
-      )
+      .setDescription(`
+As a **True God** at Sequence 0, you are beyond the mortal concept of losing control.
+
+The beyonder characteristics within you are perfectly harmonized with your spiritual body.
+      `)
       .addFields({
         name: 'Your Status',
         value: `${pathway.emoji} ${pathway.name} - Sequence 0`,
@@ -77,7 +79,7 @@ async function checkLoseControl(interaction) {
 
     return await interaction.editReply({ embeds: [embed] });
   }
-  
+
   const risk = seqInfo.risk;
   const roll = Math.random() * 100;
   const lostControl = roll < risk;
@@ -107,44 +109,52 @@ async function checkLoseControl(interaction) {
 
   if (lostControl) {
     embed.setColor(0xff0000);
-    embed.setDescription(
-      '⚠️ **YOU HAVE LOST CONTROL!**\n\n' +
-      '```
-      'Your mind fragments as corruption spreads...\n' +
-      'Madness begins to consume your consciousness...```\n\n' +
-      '**Immediate effects:**\n' +
-      '• Spiritual body destabilizing\n' +
-      '• Risk of mutation increasing\n' +
-      '• Mental corruption detected\n\n' +
-      '*Seek containment from an administrator immediately!*'
-    );
-    
+    embed.setDescription(`
+⚠️ **YOU HAVE LOST CONTROL!**
+
+\`\`\`
+Your mind fragments as corruption spreads...
+Madness begins to consume your consciousness...
+\`\`\`
+
+**Immediate effects:**
+• Spiritual body destabilizing
+• Risk of mutation increasing
+• Mental corruption detected
+
+*Seek containment from an administrator immediately!*
+    `);
+
     embed.addFields({
       name: '💀 Total Times Lost Control',
       value: `${(userData.lose_control_count || 0) + 1} times`,
       inline: false
     });
 
-    embed.setFooter({ 
-      text: `Warning: Repeated loss of control may result in permanent corruption` 
+    embed.setFooter({
+      text: `Warning: Repeated loss of control may result in permanent corruption`
     });
 
   } else {
     embed.setColor(0x43b581);
-    embed.setDescription(
-      '✨ **You successfully maintained control!**\n\n' +
-      '```
-      'you suppress the chaotic characteristics within.\n' +
-      'Your spiritual body remains stable...```\n\n' +
-      '**Your mental defenses held strong:**\n' +
-      '• Beyonder characteristics contained\n' +
-      '• Spiritual body stable\n' +
-      '• Mind clear and focused\n\n' +
-      '*Remember: The higher your sequence, the greater the danger.*'
-    );
+    embed.setDescription(`
+✨ **You successfully maintained control!**
 
-    embed.setFooter({ 
-      text: 'Stay vigilant, Beyonder. The path ahead only grows more perilous...' 
+\`\`\`
+You suppress the chaotic characteristics within.
+Your spiritual body remains stable...
+\`\`\`
+
+**Your mental defenses held strong:**
+• Beyonder characteristics contained
+• Spiritual body stable
+• Mind clear and focused
+
+*Remember: The higher your sequence, the greater the danger.*
+    `);
+
+    embed.setFooter({
+      text: 'Stay vigilant, Beyonder. The path ahead only grows more perilous...'
     });
   }
 
@@ -156,13 +166,15 @@ async function checkLoseControl(interaction) {
       const warningEmbed = new EmbedBuilder()
         .setColor(0xff0000)
         .setTitle('⚠️ LOSE CONTROL ALERT')
-        .setDescription(
-          `${interaction.user} has **lost control** of their beyonder characteristics!\n\n` +
-          `**Pathway:** ${pathway.emoji} ${pathway.name}\n` +
-          `**Sequence:** ${userData.sequence} - ${seqInfo.name}\n` +
-          `**Risk:** ${risk}% | **Roll:** ${roll.toFixed(2)}\n\n` +
-          `*Administrators should investigate immediately.*`
-        )
+        .setDescription(`
+${interaction.user} has **lost control** of their beyonder characteristics!
+
+**Pathway:** ${pathway.emoji} ${pathway.name}
+**Sequence:** ${userData.sequence} - ${seqInfo.name}
+**Risk:** ${risk}% | **Roll:** ${roll.toFixed(2)}
+
+*Administrators should investigate immediately.*
+        `)
         .setTimestamp();
 
       try {
@@ -176,14 +188,18 @@ async function checkLoseControl(interaction) {
 
 async function showHistory(interaction) {
   await interaction.deferReply({ ephemeral: true });
-  
+
   const history = await getUserLoseControlHistory(interaction.user.id, 15);
 
   if (history.length === 0) {
     const embed = new EmbedBuilder()
       .setColor(0xd4af37)
       .setTitle('📜 No History')
-      .setDescription('You have no lose control checks yet.\n\nUse `/lose-control check` to test your stability!');
+      .setDescription(`
+You have no lose control checks yet.
+
+Use \`/lose-control check\` to test your stability!
+      `);
 
     return await interaction.editReply({ embeds: [embed] });
   }
@@ -195,15 +211,15 @@ async function showHistory(interaction) {
 
   let historyText = '';
   history.forEach((entry, index) => {
-    const pathway = getPathway(entry.pathway);
+    const pathway = PATHWAYS[entry.pathway.toUpperCase()] || { emoji: '❓', name: entry.pathway };
     const result = entry.lost_control ? '❌ **LOST CONTROL**' : '✅ Maintained';
     const date = new Date(entry.timestamp).toLocaleDateString();
     const time = new Date(entry.timestamp).toLocaleTimeString();
-    
-    historyText += 
-      `**${index + 1}.** ${date} ${time}\n` +
-      `   ${pathway.emoji} Sequence ${entry.sequence} | Risk: ${entry.risk_percentage}% | Roll: ${entry.roll_result.toFixed(2)}\n` +
-      `   ${result}\n\n`;
+
+    historyText += `
+**${index + 1}.** ${date} ${time}
+   ${pathway.emoji} Sequence ${entry.sequence} | Risk: ${entry.risk_percentage}% | Roll: ${entry.roll_result.toFixed(2)}
+   ${result}\n`;
   });
 
   embed.setDescription(historyText);
