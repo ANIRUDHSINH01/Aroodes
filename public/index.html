@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aroodes - Lord of the Mysteries</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital@0;1&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Crimson Text', serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      color: #e9e9e9;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    
+    .stars {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite;
+    }
+    
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 50px auto;
+      padding: 40px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 4em;
+      color: #d4af37;
+      text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+      margin-bottom: 10px;
+      letter-spacing: 3px;
+    }
+    
+    .subtitle {
+      font-size: 1.3em;
+      color: #b8b8b8;
+      font-style: italic;
+    }
+    
+    .card {
+      background: rgba(30, 30, 50, 0.85);
+      border: 2px solid #d4af37;
+      border-radius: 15px;
+      padding: 30px;
+      margin: 30px 0;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+    }
+    
+    .pathways-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 30px 0;
+    }
+    
+    .pathway-item {
+      background: rgba(212, 175, 55, 0.1);
+      border: 1px solid #d4af37;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    
+    .pathway-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 20px rgba(212, 175, 55, 0.3);
+      background: rgba(212, 175, 55, 0.2);
+    }
+    
+    .pathway-emoji {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+    
+    .pathway-name {
+      font-family: 'Cinzel', serif;
+      color: #d4af37;
+      font-size: 0.9em;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 18px 40px;
+      background: linear-gradient(135deg, #d4af37, #f0c75e);
+      color: #1a1a2e;
+      text-decoration: none;
+      border-radius: 10px;
+      font-family: 'Cinzel', serif;
+      font-size: 1.2em;
+      font-weight: bold;
+      transition: all 0.3s;
+      box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+      text-align: center;
+      display: block;
+      max-width: 400px;
+      margin: 30px auto;
+    }
+    
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6);
+    }
+    
+    .quote {
+      font-style: italic;
+      color: #b8b8b8;
+      text-align: center;
+      margin: 30px 0;
+      font-size: 1.1em;
+      padding: 20px;
+      border-left: 3px solid #d4af37;
+      background: rgba(212, 175, 55, 0.05);
+    }
+    
+    .features {
+      list-style: none;
+    }
+    
+    .features li {
+      padding: 15px;
+      margin: 10px 0;
+      background: rgba(212, 175, 55, 0.1);
+      border-left: 4px solid #d4af37;
+      border-radius: 5px;
+    }
+    
+    .features li:before {
+      content: "⭐";
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+  
+  <div class="container">
+    <div class="header">
+      <h1>🌙 AROODES 🌙</h1>
+      <p class="subtitle">Above the Gray Fog, Below the Crimson Moon</p>
+    </div>
+    
+    <div class="card">
+      <h2 style="color: #d4af37; font-family: 'Cinzel', serif; margin-bottom: 20px;">
+        Welcome to the Pathway System
+      </h2>
+      <p style="line-height: 1.8; font-size: 1.1em;">
+        Connect your Discord account to begin your journey as a Beyonder. 
+        Your progression through the sequences will be tracked, and roles will be 
+        automatically assigned based on your spiritual advancement.
+      </p>
+    </div>
+    
+    <div class="card">
+      <h3 style="color: #d4af37; font-family: 'Cinzel', serif; margin-bottom: 20px; text-align: center;">
+        All 22 Beyonder Pathways
+      </h3>
+      <div class="pathways-grid">
+        <div class="pathway-item"><div class="pathway-emoji">🃏</div><div class="pathway-name">Fool</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">⚡</div><div class="pathway-name">Error</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">🚪</div><div class="pathway-name">Door</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">👁️</div><div class="pathway-name">Visionary</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">☀️</div><div class="pathway-name">Sun</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">⚔️</div><div class="pathway-name">Tyrant</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">🗼</div><div class="pathway-name">White Tower</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">🎣</div><div class="pathway-name">Hanged Man</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">🌑</div><div class="pathway-name">Darkness</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">💀</div><div class="pathway-name">Death</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">⚒️</div><div class="pathway-name">Twilight Giant</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">💃</div><div class="pathway-name">Demoness</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">🔥</div><div class="pathway-name">Red Priest</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">🌙</div><div class="pathway-name">Moon</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">🌾</div><div class="pathway-name">Mother</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">🕳️</div><div class="pathway-name">Abyss</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">⛓️</div><div class="pathway-name">Chained</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">⚖️</div><div class="pathway-name">Justiciar</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">🛡️</div><div class="pathway-name">Paragon</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">👑</div><div class="pathway-name">Black Emperor</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">📚</div><div class="pathway-name">Hermit</div></div>
+        <div class="pathway-item"><div class="pathway-emoji">🎰</div><div class="pathway-name">Wheel of Fortune</div></div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h3 style="color: #d4af37; font-family: 'Cinzel', serif; margin-bottom: 20px;">
+        System Features
+      </h3>
+      <ul class="features">
+        <li><strong>22 Complete Pathways:</strong> All beyonder pathways with 10 sequences each</li>
+        <li><strong>Lose Control System:</strong> Risk increases with power</li>
+        <li><strong>Admin-Based Advancement:</strong> Progression managed by admins</li>
+        <li><strong>Linked Roles:</strong> Automatic Discord role assignment</li>
+        <li><strong>Statistics Tracking:</strong> Full history of advancements</li>
+        <li><strong>SQLite Database:</strong> Persistent data storage</li>
+      </ul>
+    </div>
+    
+    <div class="quote">
+      "In the depths of the mysterious fog, I shall become the Fool that holds all mysteries."
+      <br>
+      <small>— The Fool</small>
+    </div>
+    
+    <a href="/linked-role" class="btn">🔮 Connect Your Pathway</a>
+    
+    <div class="quote" style="margin-top: 50px; border: none; font-size: 0.9em;">
+      By connecting, you authorize Aroodes to track your Beyonder progression 
+      and assign pathway-specific roles.
+    </div>
+  </div>
+  
+  <script>
+    // Generate stars
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 100; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDelay = Math.random() * 3 + 's';
+      starsContainer.appendChild(star);
+    }
+  </script>
+</body>
+</html>
