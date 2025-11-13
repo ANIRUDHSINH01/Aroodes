@@ -70,7 +70,7 @@ You're having an ongoing conversation. Remember context from previous messages.`
       conversationText += `User: ${message}\nAroodes:`;
 
       // Generate response
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const result = await model.generateContent(conversationText);
       const response = result.response.text();
 
