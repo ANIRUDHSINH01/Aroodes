@@ -60,34 +60,66 @@ export default {
   async execute(interaction) {
     const subcommand = interaction.options.getSubcommand();
 
-    switch(subcommand) {
-      case 'status':
-        await showStatus(interaction);
-        break;
-      case 'list':
-        await listPathways(interaction);
-        break;
-      case 'info':
-        await pathwayInfo(interaction);
-        break;
-      case 'stats':
-        await showStats(interaction);
-        break;
+    try {
+      switch(subcommand) {
+        case 'status':
+          await showStatus(interaction);
+          break;
+        case 'list':
+          await listPathways(interaction);
+          break;
+        case 'info':
+          await pathwayInfo(interaction);
+          break;
+        case 'stats':
+          await showStats(interaction);
+          break;
+      }
+    } catch (error) {
+      console.error('Error in pathway command:', error);
+      
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({
+          content: `❌ Error: ${error.message}`,
+          ephemeral: true
+        });
+      }
     }
   }
 };
 
 async function showStatus(interaction) {
-  const userData = getUser(interaction.user.id);
+  await interaction.deferReply();
+  
+  const userData = await getUser(interaction.user.id);
 
   if (!userData || !userData.pathway) {
-    return await interaction.reply({
-      content: '❌ You are not a Beyonder yet! Ask an admin to assign you a pathway using `/admin-pathway set-pathway`.',
-      ephemeral: true
-    });
+    const embed = new EmbedBuilder()
+      .setColor(0xff6b6b)
+      .setTitle('❌ Not a Beyonder')
+      .setDescription(
+        'You are not a Beyonder yet!\n\n' +
+        'Ask a server administrator to assign you a pathway using:\n' +
+        '`/admin-pathway set-pathway @you <pathway>`'
+      )
+      .addFields({
+        name: '📚 Learn More',
+        value: 'Use `/pathway list` to see all available pathways!',
+        inline: false
+      })
+      .setFooter({ text: 'The mystical world awaits...' });
+
+    return await interaction.editReply({ embeds: [embed] });
   }
 
   const pathway = PATHWAYS[userData.pathway.toUpperCase()];
+  
+  if (!pathway) {
+    return await interaction.editReply({
+      content: '❌ Invalid pathway data. Please contact an administrator.'
+    });
+  }
+
   const seqInfo = getSequence(pathway, userData.sequence);
   
   const daysSince = userData.assigned_at 
@@ -108,7 +140,7 @@ async function showStatus(interaction) {
       { name: '⚠️ Times Lost Control', value: `${userData.lose_control_count || 0}`, inline: true },
       { name: '📅 Days as Beyonder', value: `${daysSince}`, inline: true }
     )
-    .setFooter({ text: 'Use /lose-control to check your stability' })
+    .setFooter({ text: 'Use /lose-control check to test your stability' })
     .setTimestamp();
 
   if (userData.sequence <= 3) {
@@ -117,16 +149,28 @@ async function showStatus(interaction) {
       value: 'You have reached Angel level! Your power is extraordinary.', 
       inline: false 
     });
+    embed.setColor(0xffd700); // Gold color for Angels
   }
 
-  await interaction.reply({ embeds: [embed] });
+  if (userData.sequence === 0) {
+    embed.addFields({
+      name: '⚜️ True God Status',
+      value: 'You have ascended to True Godhood! You are beyond lose control.',
+      inline: false
+    });
+    embed.setColor(0xff0000); // Red for True Gods
+  }
+
+  await interaction.editReply({ embeds: [embed] });
 }
 
 async function listPathways(interaction) {
+  await interaction.deferReply();
+  
   const embed = new EmbedBuilder()
     .setColor(0xd4af37)
     .setTitle('📚 All 22 Beyonder Pathways')
-    .setDescription('Complete list of all pathways in the mystical world:');
+    .setDescription('Complete list of all pathways in the mystical world:\n');
 
   // Group pathways by divine authority
   const groups = {};
@@ -137,49 +181,79 @@ async function listPathways(interaction) {
 
   for (const [group, pathways] of Object.entries(groups)) {
     embed.addFields({
-      name: group,
+      name: `${group}`,
       value: pathways.join('\n'),
       inline: true
     });
   }
 
-  embed.setFooter({ text: 'Use /pathway info <pathway> for detailed information' });
+  embed.addFields({
+    name: '\u200b',
+    value: 
+      '**Commands:**\n' +
+      '• `/pathway info <pathway>` - Detailed pathway info\n' +
+      '• `/pathway stats` - Server statistics\n' +
+      '• `/pathway status` - Your current status',
+    inline: false
+  });
 
-  await interaction.reply({ embeds: [embed] });
+  embed.setFooter({ text: `Total Pathways: ${Object.keys(PATHWAYS).length}` });
+
+  await interaction.editReply({ embeds: [embed] });
 }
 
 async function pathwayInfo(interaction) {
+  await interaction.deferReply();
+  
   const pathwayName = interaction.options.getString('pathway');
   const pathway = getPathway(pathwayName);
 
   if (!pathway) {
-    return await interaction.reply({
-      content: '❌ Pathway not found!',
-      ephemeral: true
+    return await interaction.editReply({
+      content: '❌ Pathway not found!'
     });
   }
 
   const embed = new EmbedBuilder()
     .setColor(0xd4af37)
     .setTitle(`${pathway.emoji} ${pathway.name} Pathway`)
-    .setDescription(`**Divine Group:** ${pathway.group}\n\n**Sequence Progression:**`);
+    .setDescription(`**Divine Group:** ${pathway.group}\n\n**Complete Sequence Progression:**`);
 
-  // Show all sequences
-  let sequences = '';
+  // Show all sequences in a formatted way
+  let sequencesText = '';
   pathway.sequences.forEach(seq => {
-    const status = seq.seq <= 3 ? '👼' : '🔮';
-    sequences += `${status} **Seq ${seq.seq}** - ${seq.name} (Risk: ${seq.risk}%)\n`;
+    const status = seq.seq === 0 ? '⚜️' : seq.seq <= 3 ? '👼' : '🔮';
+    const risk = seq.risk === 0 ? 'None' : `${seq.risk}%`;
+    sequencesText += `${status} **Sequence ${seq.seq}** - ${seq.name}\n`;
+    sequencesText += `   └ Lose Control Risk: ${risk}\n`;
   });
 
-  embed.addFields({ name: 'Sequences', value: sequences, inline: false });
-  embed.setFooter({ text: 'Each sequence brings greater power and greater risk' });
+  embed.addFields({ 
+    name: 'Sequence Ladder', 
+    value: sequencesText, 
+    inline: false 
+  });
 
-  await interaction.reply({ embeds: [embed] });
+  embed.addFields({
+    name: '⚠️ Important',
+    value: 
+      '• Lower sequences = More power\n' +
+      '• Higher sequences = Higher risk\n' +
+      '• Sequence 0 = True God (No risk)\n' +
+      '• Sequences 1-3 = Angel level',
+    inline: false
+  });
+
+  embed.setFooter({ text: 'Each advancement brings greater power and greater danger' });
+
+  await interaction.editReply({ embeds: [embed] });
 }
 
 async function showStats(interaction) {
-  const pathwayStats = getPathwayStats();
-  const sequenceStats = getSequenceDistribution();
+  await interaction.deferReply();
+  
+  const pathwayStats = await getPathwayStats();
+  const sequenceStats = await getSequenceDistribution();
 
   const embed = new EmbedBuilder()
     .setColor(0xd4af37)
@@ -187,27 +261,58 @@ async function showStats(interaction) {
     .setDescription('Current distribution of Beyonders in this server:');
 
   if (pathwayStats.length > 0) {
-    const pathwayText = pathwayStats.map(stat => {
+    const pathwayText = pathwayStats.slice(0, 10).map(stat => {
       const pathway = getPathway(stat.pathway);
+      if (!pathway) return null;
       return `${pathway.emoji} ${pathway.name}: **${stat.count}** Beyonders`;
-    }).join('\n');
+    }).filter(Boolean).join('\n');
 
-    embed.addFields({ name: 'By Pathway', value: pathwayText, inline: false });
+    if (pathwayText) {
+      embed.addFields({ 
+        name: '🎭 Most Popular Pathways', 
+        value: pathwayText, 
+        inline: false 
+      });
+    }
   }
 
   if (sequenceStats.length > 0) {
     const sequenceText = sequenceStats.map(stat => {
-      const status = stat.sequence <= 3 ? '👼 Angel' : '🔮 Beyonder';
+      let status = '🔮';
+      if (stat.sequence === 0) status = '⚜️';
+      else if (stat.sequence <= 3) status = '👼';
+      
       return `Sequence ${stat.sequence}: **${stat.count}** ${status}`;
     }).join('\n');
 
-    embed.addFields({ name: 'By Sequence', value: sequenceText, inline: false });
+    embed.addFields({ 
+      name: '📈 Sequence Distribution', 
+      value: sequenceText, 
+      inline: false 
+    });
   }
 
   const totalBeyonders = pathwayStats.reduce((sum, stat) => sum + stat.count, 0);
-  embed.setFooter({ text: `Total Beyonders: ${totalBeyonders}` });
+  const angels = sequenceStats
+    .filter(s => s.sequence <= 3 && s.sequence > 0)
+    .reduce((sum, s) => sum + s.count, 0);
+  const trueGods = sequenceStats.find(s => s.sequence === 0)?.count || 0;
+
+  embed.addFields({
+    name: '📊 Summary',
+    value: 
+      `Total Beyonders: **${totalBeyonders}**\n` +
+      `Angels (Seq 1-3): **${angels}**\n` +
+      `True Gods (Seq 0): **${trueGods}**`,
+    inline: false
+  });
+
+  if (totalBeyonders === 0) {
+    embed.setDescription('No Beyonders in this server yet. Be the first to start your mystical journey!');
+  }
+
+  embed.setFooter({ text: `Updated: ${new Date().toLocaleString()}` });
   embed.setTimestamp();
 
-  await interaction.reply({ embeds: [embed] });
-    }
-                        
+  await interaction.editReply({ embeds: [embed] });
+}
