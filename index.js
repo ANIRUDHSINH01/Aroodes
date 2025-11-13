@@ -7,7 +7,7 @@ import fs from 'fs';
 import { registerMetadata } from './config/metadata.js';
 import { router } from './routes/oauth.js';
 import { PATHWAYS } from './data/pathways.js';
-import './data/database.js'; // Initialize database
+import { connectDB } from './data/database.js'; // MongoDB connection
 
 dotenv.config();
 
@@ -109,8 +109,13 @@ process.on('unhandledRejection', error => {
 // Start bot and server
 (async () => {
   try {
+    // Connect to MongoDB first
+    await connectDB();
+    
+    // Then start Discord bot
     await client.login(process.env.DISCORD_TOKEN);
     
+    // Finally start Express server
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
       console.log(`🌐 OAuth server running on http://localhost:${PORT}`);
