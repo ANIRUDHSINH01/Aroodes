@@ -66,7 +66,7 @@ export default {
       }
 
       // Generate AI response
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       
       const prompt = AROODES_PERSONALITY + userContext + `\n\nUser Question: "${question}"\n\nAroodes Response:`;
       
