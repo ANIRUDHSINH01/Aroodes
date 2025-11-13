@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
-import { PATHWAYS, getPathway, getSequence, getAllPathwayNames } from '../data/pathways.js';
+import { PATHWAYS, getPathway, getSequence } from '../data/pathways.js';
 import { 
   getUser, 
   setUserPathway, 
@@ -60,10 +60,28 @@ export default {
             .setDescription('Choose pathway')
             .setRequired(true)
             .addChoices(
-              ...getAllPathwayNames().map(p => ({
-                name: p.display,
-                value: p.name
-              }))
+              { name: '🃏 Fool', value: 'fool' },
+              { name: '⚡ Error', value: 'error' },
+              { name: '🚪 Door', value: 'door' },
+              { name: '👁️ Visionary', value: 'visionary' },
+              { name: '☀️ Sun', value: 'sun' },
+              { name: '⚔️ Tyrant', value: 'tyrant' },
+              { name: '🗼 White Tower', value: 'white_tower' },
+              { name: '🎣 Hanged Man', value: 'hanged_man' },
+              { name: '🌑 Darkness', value: 'darkness' },
+              { name: '💀 Death', value: 'death' },
+              { name: '⚒️ Twilight Giant', value: 'twilight_giant' },
+              { name: '💃 Demoness', value: 'demoness' },
+              { name: '🔥 Red Priest', value: 'red_priest' },
+              { name: '🌙 Moon', value: 'moon' },
+              { name: '🌾 Mother', value: 'mother' },
+              { name: '🕳️ Abyss', value: 'abyss' },
+              { name: '⛓️ Chained', value: 'chained' },
+              { name: '⚖️ Justiciar', value: 'justiciar' },
+              { name: '🛡️ Paragon', value: 'paragon' },
+              { name: '👑 Black Emperor', value: 'black_emperor' },
+              { name: '📚 Hermit', value: 'hermit' },
+              { name: '🎰 Wheel of Fortune', value: 'wheel_of_fortune' }
             )
         )
     )
@@ -98,52 +116,69 @@ export default {
   async execute(interaction) {
     const subcommand = interaction.options.getSubcommand();
 
-    switch(subcommand) {
-      case 'advance':
-        await advanceUser(interaction);
-        break;
-      case 'set-sequence':
-        await setSequence(interaction);
-        break;
-      case 'set-pathway':
-        await assignPathway(interaction);
-        break;
-      case 'view':
-        await viewUser(interaction);
-        break;
-      case 'reset':
-        await resetUser(interaction);
-        break;
-      case 'list':
-        await listBeyonders(interaction);
-        break;
+    try {
+      switch(subcommand) {
+        case 'advance':
+          await advanceUser(interaction);
+          break;
+        case 'set-sequence':
+          await setSequence(interaction);
+          break;
+        case 'set-pathway':
+          await assignPathway(interaction);
+          break;
+        case 'view':
+          await viewUser(interaction);
+          break;
+        case 'reset':
+          await resetUser(interaction);
+          break;
+        case 'list':
+          await listBeyonders(interaction);
+          break;
+      }
+    } catch (error) {
+      console.error('Error in admin-pathway command:', error);
+      
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({
+          content: `❌ Error: ${error.message}`,
+          ephemeral: true
+        });
+      }
     }
   }
 };
 
 async function advanceUser(interaction) {
+  await interaction.deferReply();
+  
   const targetUser = interaction.options.getUser('user');
-  const userData = getUser(targetUser.id);
+  const userData = await getUser(targetUser.id);
 
   if (!userData || !userData.pathway) {
-    return await interaction.reply({
-      content: `❌ ${targetUser} doesn't have a pathway assigned yet! Use \`/admin-pathway set-pathway\` first.`,
-      ephemeral: true
+    return await interaction.editReply({
+      content: `❌ ${targetUser} doesn't have a pathway assigned yet! Use \`/admin-pathway set-pathway\` first.`
     });
   }
 
   if (userData.sequence === 0) {
-    return await interaction.reply({
-      content: `❌ ${targetUser} is already at Sequence 0 (True God)!`,
-      ephemeral: true
+    return await interaction.editReply({
+      content: `❌ ${targetUser} is already at Sequence 0 (True God)!`
     });
   }
 
   const pathway = PATHWAYS[userData.pathway.toUpperCase()];
+  if (!pathway) {
+    return await interaction.editReply({
+      content: `❌ Invalid pathway data for ${targetUser}. Please reset and reassign.`
+    });
+  }
+
   const oldSequence = userData.sequence;
   const newSequence = oldSequence - 1;
 
-  updateUserSequence(targetUser.id, newSequence, interaction.user.id);
+  await updateUserSequence(targetUser.id, newSequence, interaction.user.id);
 
   const oldSeqInfo = getSequence(pathway, oldSequence);
   const newSeqInfo = getSequence(pathway, newSequence);
@@ -172,7 +207,7 @@ async function advanceUser(interaction) {
     .setFooter({ text: 'Above the Gray Fog' })
     .setTimestamp();
 
-  await interaction.reply({ embeds: [embed] });
+  await interaction.editReply({ embeds: [embed] });
 
   // Notify user via DM
   try {
@@ -194,20 +229,21 @@ async function advanceUser(interaction) {
 }
 
 async function setSequence(interaction) {
+  await interaction.deferReply();
+  
   const targetUser = interaction.options.getUser('user');
   const sequence = interaction.options.getInteger('sequence');
   
-  let userData = getUser(targetUser.id);
+  let userData = await getUser(targetUser.id);
 
   if (!userData || !userData.pathway) {
-    return await interaction.reply({
-      content: `❌ ${targetUser} doesn't have a pathway assigned. Use \`/admin-pathway set-pathway\` first.`,
-      ephemeral: true
+    return await interaction.editReply({
+      content: `❌ ${targetUser} doesn't have a pathway assigned. Use \`/admin-pathway set-pathway\` first.`
     });
   }
 
-  updateUserSequence(targetUser.id, sequence, interaction.user.id);
-  userData = getUser(targetUser.id);
+  await updateUserSequence(targetUser.id, sequence, interaction.user.id);
+  userData = await getUser(targetUser.id);
 
   const pathway = PATHWAYS[userData.pathway.toUpperCase()];
   const seqInfo = getSequence(pathway, sequence);
@@ -223,17 +259,34 @@ async function setSequence(interaction) {
     )
     .setTimestamp();
 
-  await interaction.reply({ embeds: [embed] });
+  await interaction.editReply({ embeds: [embed] });
 }
 
 async function assignPathway(interaction) {
+  await interaction.deferReply();
+  
   const targetUser = interaction.options.getUser('user');
   const pathwayName = interaction.options.getString('pathway');
 
-  setUserPathway(targetUser.id, targetUser.username, pathwayName, interaction.user.id);
-  const userData = getUser(targetUser.id);
+  console.log(`Assigning pathway: ${pathwayName} to ${targetUser.tag}`);
 
-  const pathway = PATHWAYS[pathwayName.toUpperCase()];
+  const pathway = getPathway(pathwayName);
+  
+  if (!pathway) {
+    return await interaction.editReply({
+      content: `❌ Invalid pathway: ${pathwayName}`
+    });
+  }
+
+  await setUserPathway(targetUser.id, targetUser.username, pathwayName, interaction.user.id);
+  const userData = await getUser(targetUser.id);
+
+  if (!userData) {
+    return await interaction.editReply({
+      content: `❌ Failed to assign pathway. Please try again.`
+    });
+  }
+
   const seqInfo = getSequence(pathway, userData.sequence);
 
   const embed = new EmbedBuilder()
@@ -251,7 +304,7 @@ async function assignPathway(interaction) {
     .setFooter({ text: 'The journey begins...' })
     .setTimestamp();
 
-  await interaction.reply({ embeds: [embed] });
+  await interaction.editReply({ embeds: [embed] });
 
   // Notify user
   try {
@@ -272,19 +325,20 @@ async function assignPathway(interaction) {
 }
 
 async function viewUser(interaction) {
+  await interaction.deferReply();
+  
   const targetUser = interaction.options.getUser('user');
-  const userData = getUser(targetUser.id);
+  const userData = await getUser(targetUser.id);
 
   if (!userData || !userData.pathway) {
-    return await interaction.reply({
-      content: `${targetUser} is not a Beyonder yet.`,
-      ephemeral: true
+    return await interaction.editReply({
+      content: `${targetUser} is not a Beyonder yet.`
     });
   }
 
   const pathway = PATHWAYS[userData.pathway.toUpperCase()];
   const seqInfo = getSequence(pathway, userData.sequence);
-  const history = getAdvancementHistory(targetUser.id, 5);
+  const history = await getAdvancementHistory(targetUser.id, 5);
 
   const daysSince = userData.assigned_at 
     ? Math.floor((Date.now() - new Date(userData.assigned_at).getTime()) / (1000 * 60 * 60 * 24))
@@ -312,21 +366,22 @@ async function viewUser(interaction) {
 
   embed.setFooter({ text: 'Pathway Information' }).setTimestamp();
 
-  await interaction.reply({ embeds: [embed] });
+  await interaction.editReply({ embeds: [embed] });
 }
 
 async function resetUser(interaction) {
+  await interaction.deferReply();
+  
   const targetUser = interaction.options.getUser('user');
   
-  const userData = getUser(targetUser.id);
+  const userData = await getUser(targetUser.id);
   if (!userData) {
-    return await interaction.reply({
-      content: `${targetUser} has no pathway data to reset.`,
-      ephemeral: true
+    return await interaction.editReply({
+      content: `${targetUser} has no pathway data to reset.`
     });
   }
 
-  deleteUser(targetUser.id);
+  await deleteUser(targetUser.id);
 
   const embed = new EmbedBuilder()
     .setColor(0xff0000)
@@ -337,16 +392,17 @@ async function resetUser(interaction) {
     )
     .setTimestamp();
 
-  await interaction.reply({ embeds: [embed] });
+  await interaction.editReply({ embeds: [embed] });
 }
 
 async function listBeyonders(interaction) {
-  const allUsers = getAllUsers();
+  await interaction.deferReply();
+  
+  const allUsers = await getAllUsers();
 
   if (allUsers.length === 0) {
-    return await interaction.reply({
-      content: 'No Beyonders in this server yet.',
-      ephemeral: true
+    return await interaction.editReply({
+      content: 'No Beyonders in this server yet.'
     });
   }
 
@@ -359,6 +415,8 @@ async function listBeyonders(interaction) {
   let description = '';
   for (const user of allUsers.slice(0, 25)) {
     const pathway = PATHWAYS[user.pathway.toUpperCase()];
+    if (!pathway) continue;
+    
     const status = user.sequence <= 3 ? '👼' : '🔮';
     const seqInfo = getSequence(pathway, user.sequence);
     description += `${status} <@${user.user_id}> - ${pathway.emoji} ${pathway.name} Seq ${user.sequence} (${seqInfo.name})\n`;
@@ -366,5 +424,5 @@ async function listBeyonders(interaction) {
 
   embed.setDescription(description || 'No Beyonders yet.');
 
-  await interaction.reply({ embeds: [embed] });
-                                        }
+  await interaction.editReply({ embeds: [embed] });
+}
