@@ -529,4 +529,185 @@
             {pathway.symbol}
           </div>
 
-          {/* Card N
+          {/* Card Name */}
+          <h3 className="title-font text-center text-gold text-sm md:text-lg mb-3 md:mb-4 leading-tight">
+            {pathway.name}
+          </h3>
+
+          {/* Gradient Bar */}
+          <div className={`h-1.5 md:h-2 rounded-full bg-gradient-to-r ${pathway.color}`}></div>
+
+          {/* Ornamental Divider */}
+          <div className="mt-3 md:mt-4 flex justify-center gap-2 text-gold text-xs opacity-40">
+            <span>✦</span>
+            <span>◈</span>
+            <span>✦</span>
+          </div>
+        </div>
+      );
+    }
+
+    function SequenceInfo() {
+      const sequences = [
+        { seq: 9, name: 'Initiate', risk: '5%', desc: 'The beginning' },
+        { seq: 5, name: 'Adept', risk: '25%', desc: 'Halfway to divinity' },
+        { seq: 3, name: 'Angel', risk: '40%', desc: 'Transcending humanity' },
+        { seq: 0, name: 'True God', risk: '0%', desc: 'Absolute divinity' }
+      ];
+
+      return (
+        <section className="relative z-10 py-12 md:py-20 px-4 bg-gradient-to-b from-transparent via-crimson via-opacity-5 to-transparent">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="title-font text-3xl md:text-4xl text-center text-gold mb-8 md:mb-12 mystical-glow">
+              The Sequence Ladder
+            </h2>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {sequences.map(seq => (
+                <div key={seq.seq} className="tarot-card p-4 md:p-6">
+                  <div className="text-center">
+                    <div className="text-5xl md:text-6xl text-gold mb-3 md:mb-4">{seq.seq}</div>
+                    <h3 className="title-font text-xl md:text-2xl text-gold mb-2">{seq.name}</h3>
+                    <p className="text-xs md:text-sm text-gray-400 mb-3 md:mb-4 italic hidden md:block">{seq.desc}</p>
+                    <div className="sequence-bar h-1 rounded-full mb-2"></div>
+                    <p className="text-xs text-crimson">Risk: {seq.risk}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function CallToAction() {
+      return (
+        <section id="connect" className="relative z-10 py-12 md:py-20 px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="tarot-card blasphemy-card p-8 md:p-12 text-center">
+              <div className="text-5xl md:text-6xl mb-4 md:mb-6 mystical-glow">🔮</div>
+              
+              <h2 className="title-font text-3xl md:text-4xl text-gold mb-4 md:mb-6 mystical-glow">
+                Step Into the Mystical World
+              </h2>
+
+              <p className="text-base md:text-xl text-gray-300 mb-6 md:mb-8 leading-relaxed max-w-2xl mx-auto">
+                Link your Discord to synchronize your beyonder journey. Choose your pathway, 
+                advance through sequences, and ascend to godhood... if madness doesn't claim you first.
+              </p>
+
+              <div className="sequence-bar h-1.5 md:h-2 w-40 md:w-48 mx-auto mb-6 md:mb-8 rounded-full"></div>
+
+              <a 
+                href="/linked-role"
+                className="inline-block px-10 md:px-12 py-3 md:py-4 bg-gradient-to-r from-gold via-yellow-600 to-gold text-black font-bold text-lg md:text-xl rounded-lg active:scale-95 md:hover:scale-110 transition-all duration-300 shadow-2xl title-font mystical-glow"
+              >
+                ✦ Connect to Aroodes ✦
+              </a>
+
+              <p className="mt-6 md:mt-8 text-xs md:text-sm text-gray-500 italic ancient-font">
+                "The Gray Fog awaits those who dare..."
+              </p>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function PathwayModal({ pathway, onClose }) {
+      const [imageError, setImageError] = useState(false);
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-90 safe-area-top safe-area-bottom" onClick={onClose}>
+          <div className="tarot-card blasphemy-card max-w-3xl w-full p-6 md:p-8 relative max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 text-gold hover:text-yellow-500 text-2xl md:text-3xl w-10 h-10 flex items-center justify-center">
+              ✕
+            </button>
+
+            <div className="text-center">
+              {/* Card Number */}
+              <div className="ancient-font text-gold text-2xl md:text-3xl mb-4 md:mb-6">{pathway.number}</div>
+              {/* Pathway Image */}
+              <div className="mb-4 md:mb-6 h-32 md:h-48 flex items-center justify-center">
+                {!imageError ? (
+                  <img 
+                    src={pathway.image} 
+                    alt={pathway.name}
+                    className="pathway-image max-h-full"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <div className="text-7xl md:text-8xl text-gold opacity-50">
+                    {pathway.symbol}
+                  </div>
+                )}
+              </div>
+
+              {/* Title */}
+              <h2 className="title-font text-3xl md:text-5xl text-gold mb-3 md:mb-4 mystical-glow">
+                {pathway.name}
+              </h2>
+
+              {/* Symbol */}
+              <div className="text-5xl md:text-6xl text-gold opacity-50 mb-4 md:mb-6">{pathway.symbol}</div>
+
+              {/* Gradient */}
+              <div className={`h-2 md:h-3 rounded-full bg-gradient-to-r ${pathway.color} mb-6 md:mb-8`}></div>
+
+              {/* Description */}
+              <div className="text-left space-y-4 text-gray-300 text-sm md:text-base">
+                <p className="italic text-base md:text-lg">
+                  One of the twenty-two pathways to divinity, each representing a unique concept 
+                  and granting extraordinary abilities to those who dare consume its potion.
+                </p>
+
+                <div className="border-l-4 border-gold pl-4 md:pl-6 bg-gold bg-opacity-5 p-3 md:p-4 rounded">
+                  <p className="font-bold text-gold mb-2 title-font">Sequence Progression:</p>
+                  <p className="text-xs md:text-sm">
+                    Begin at Sequence 9 and advance through spiritual accumulation, completing rituals, 
+                    and server participation. Higher sequences grant godlike powers but invite corruption 
+                    and madness...
+                  </p>
+                </div>
+
+                <div className="text-center text-crimson text-xs md:text-sm italic mt-4 md:mt-6">
+                  ⚠ Warning: Each advancement increases lose control risk
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function Footer() {
+      return (
+        <footer className="relative z-10 py-8 md:py-12 px-4 border-t border-gold border-opacity-20 victorian-border safe-area-bottom">
+          <div className="max-w-7xl mx-auto text-center">
+            <div className="flex justify-center gap-3 md:gap-4 text-2xl md:text-3xl mb-3 md:mb-4 text-gold opacity-40">
+              <span>☽</span>
+              <span>✦</span>
+              <span>◈</span>
+              <span>✦</span>
+              <span>☾</span>
+            </div>
+            <p className="text-gray-500 text-xs md:text-sm ancient-font">
+              🪞 Aroodes - The Mystical Mirror
+            </p>
+            <p className="text-gray-600 text-xs mt-2 italic">
+              "Above the Gray Fog, the Fool watches eternally..."
+            </p>
+          </div>
+        </footer>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+
+</body>
+</html>
+
+
+          
