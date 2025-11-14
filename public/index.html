@@ -312,36 +312,37 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    // All 22 Pathways with local image paths
-    const PATHWAYS = [
-      { id: 'fool', name: 'The Fool', number: '0', image: '/pathways/fool.png', color: 'from-yellow-600 via-gold to-yellow-800', symbol: '∞' },
-      { id: 'error', name: 'Error', number: 'I', image: '/pathways/error.png', color: 'from-purple-600 via-indigo-700 to-purple-900', symbol: '⚠' },
-      { id: 'door', name: 'Door', number: 'II', image: '/pathways/door.png', color: 'from-cyan-600 via-blue-700 to-indigo-800', symbol: '◉' },
-      { id: 'visionary', name: 'Visionary', number: 'III', image: '/pathways/visionary.png', color: 'from-purple-500 via-indigo-600 to-purple-800', symbol: '◈' },
-      { id: 'sun', name: 'The Sun', number: 'IV', image: '/pathways/sun.png', color: 'from-yellow-400 via-orange-500 to-red-600', symbol: '☼' },
-      { id: 'tyrant', name: 'Tyrant', number: 'V', image: '/pathways/tyrant.png', color: 'from-blue-600 via-cyan-700 to-blue-900', symbol: '⚡' },
-      { id: 'white_tower', name: 'White Tower', number: 'VI', image: '/pathways/white_tower.png', color: 'from-gray-300 via-gray-400 to-gray-600', symbol: '△' },
-      { id: 'hanged_man', name: 'Hanged Man', number: 'VII', image: '/pathways/hanged_man.png', color: 'from-teal-500 via-cyan-600 to-blue-700', symbol: '☿' },
-      { id: 'darkness', name: 'Darkness', number: 'VIII', image: '/pathways/darkness.png', color: 'from-gray-700 via-gray-900 to-black', symbol: '☾' },
-      { id: 'death', name: 'Death', number: 'IX', image: '/pathways/death.png', color: 'from-gray-600 via-gray-800 to-black', symbol: '☠' },
-      { id: 'twilight', name: 'Twilight Giant', number: 'X', image: '/pathways/twilight_giant.png', color: 'from-orange-600 via-red-700 to-red-900', symbol: '⚒' },
-      { id: 'demoness', name: 'Demoness', number: 'XI', image: '/pathways/demoness.png', color: 'from-pink-500 via-purple-600 to-purple-900', symbol: '✧' },
-      { id: 'red_priest', name: 'Red Priest', number: 'XII', image: '/pathways/red_priest.png', color: 'from-red-500 via-red-700 to-red-900', symbol: '✠' },
-      { id: 'moon', name: 'The Moon', number: 'XIII', image: '/pathways/moon.png', color: 'from-purple-400 via-indigo-600 to-purple-800', symbol: '☽' },
-      { id: 'mother', name: 'Mother', number: 'XIV', image: '/pathways/mother.png', color: 'from-green-500 via-emerald-700 to-green-900', symbol: '❀' },
-      { id: 'abyss', name: 'Abyss', number: 'XV', image: '/pathways/abyss.png', color: 'from-gray-800 via-black to-gray-900', symbol: '◉' },
-      { id: 'chained', name: 'Chained', number: 'XVI', image: '/pathways/chained.png', color: 'from-gray-600 via-gray-800 to-black', symbol: '⛓' },
-      { id: 'justiciar', name: 'Justiciar', number: 'XVII', image: '/pathways/justiciar.png', color: 'from-yellow-500 via-amber-600 to-orange-700', symbol: '⚖' },
-      { id: 'paragon', name: 'Paragon', number: 'XVIII', image: '/pathways/paragon.png', color: 'from-slate-400 via-slate-600 to-slate-800', symbol: '◆' },
-      { id: 'black_emperor', name: 'Black Emperor', number: 'XIX', image: '/pathways/black_emperor.png', color: 'from-purple-800 via-indigo-900 to-black', symbol: '♔' },
-      { id: 'hermit', name: 'The Hermit', number: 'XX', image: '/pathways/hermit.png', color: 'from-amber-600 via-orange-800 to-brown-900', symbol: '✎' },
-      { id: 'wheel', name: 'Wheel of Fortune', number: 'XXI', image: '/pathways/wheel_of_fortune.png', color: 'from-emerald-500 via-teal-700 to-cyan-900', symbol: '☸' }
-    ];
+
 
     function App() {
       const [selectedPathway, setSelectedPathway] = useState(null);
       const [showIntro, setShowIntro] = useState(true);
       const [menuOpen, setMenuOpen] = useState(false);
+// All 22 Pathways with YOUR exact image names
+const PATHWAYS = [
+  { id: 'fool', name: 'The Fool', number: '0', image: '/pathways/fool.png', color: 'from-yellow-600 via-gold to-yellow-800', symbol: '∞' },
+  { id: 'error', name: 'Error', number: 'I', image: '/pathways/error.png', color: 'from-purple-600 via-indigo-700 to-purple-900', symbol: '⚠' },
+  { id: 'door', name: 'Door', number: 'II', image: '/pathways/door.png.webp', color: 'from-cyan-600 via-blue-700 to-indigo-800', symbol: '◉' },
+  { id: 'visionary', name: 'Visionary', number: 'III', image: '/pathways/visionary.png.webp', color: 'from-purple-500 via-indigo-600 to-purple-800', symbol: '◈' },
+  { id: 'sun', name: 'The Sun', number: 'IV', image: '/pathways/sun.png.webp', color: 'from-yellow-400 via-orange-500 to-red-600', symbol: '☼' },
+  { id: 'tyrant', name: 'Tyrant', number: 'V', image: '/pathways/tyrant.png.webp', color: 'from-blue-600 via-cyan-700 to-blue-900', symbol: '⚡' },
+  { id: 'white_tower', name: 'White Tower', number: 'VI', image: '/pathways/white_tower.png.webp', color: 'from-gray-300 via-gray-400 to-gray-600', symbol: '△' },
+  { id: 'hanged_man', name: 'Hanged Man', number: 'VII', image: '/pathways/hanged_man.png', color: 'from-teal-500 via-cyan-600 to-blue-700', symbol: '☿' },
+  { id: 'darkness', name: 'Darkness', number: 'VIII', image: '/pathways/darkness.png.webp', color: 'from-gray-700 via-gray-900 to-black', symbol: '☾' },
+  { id: 'death', name: 'Death', number: 'IX', image: '/pathways/death.png', color: 'from-gray-600 via-gray-800 to-black', symbol: '☠' },
+  { id: 'twilight', name: 'Twilight Giant', number: 'X', image: '/pathways/twilight_giant.png.webp', color: 'from-orange-600 via-red-700 to-red-900', symbol: '⚒' },
+  { id: 'demoness', name: 'Demoness', number: 'XI', image: '/pathways/demoness.png.webp', color: 'from-pink-500 via-purple-600 to-purple-900', symbol: '✧' },
+  { id: 'red_priest', name: 'Red Priest', number: 'XII', image: '/pathways/red_priest.png', color: 'from-red-500 via-red-700 to-red-900', symbol: '✠' },
+  { id: 'moon', name: 'The Moon', number: 'XIII', image: '/pathways/moon.png', color: 'from-purple-400 via-indigo-600 to-purple-800', symbol: '☽' },
+  { id: 'mother', name: 'Mother', number: 'XIV', image: '/pathways/mother.png.webp', color: 'from-green-500 via-emerald-700 to-green-900', symbol: '❀' },
+  { id: 'abyss', name: 'Abyss', number: 'XV', image: '/pathways/abyss.png.webp', color: 'from-gray-800 via-black to-gray-900', symbol: '◉' },
+  { id: 'chained', name: 'Chained', number: 'XVI', image: '/pathways/chained.png.webp', color: 'from-gray-600 via-gray-800 to-black', symbol: '⛓' },
+  { id: 'justiciar', name: 'Justiciar', number: 'XVII', image: '/pathways/justiciar.png.webp', color: 'from-yellow-500 via-amber-600 to-orange-700', symbol: '⚖' },
+  { id: 'paragon', name: 'Paragon', number: 'XVIII', image: '/pathways/paragon.png.webp', color: 'from-slate-400 via-slate-600 to-slate-800', symbol: '◆' },
+  { id: 'black_emperor', name: 'Black Emperor', number: 'XIX', image: '/pathways/black_emperor.png.webp', color: 'from-purple-800 via-indigo-900 to-black', symbol: '♔' },
+  { id: 'hermit', name: 'The Hermit', number: 'XX', image: '/pathways/hermit.png.webp', color: 'from-amber-600 via-orange-800 to-brown-900', symbol: '✎' },
+  { id: 'wheel', name: 'Wheel of Fortune', number: 'XXI', image: '/pathways/wheel_of_fortune.png.webp', color: 'from-emerald-500 via-teal-700 to-cyan-900', symbol: '☸' }
+];
 
       useEffect(() => {
         const timer = setTimeout(() => setShowIntro(false), 3000);
