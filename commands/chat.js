@@ -3,13 +3,13 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Store conversation history per user
+// Store conversation history per user (in-memory)
 const conversationHistory = new Map();
 
 export default {
   data: new SlashCommandBuilder()
     .setName('chat')
-    .setDescription('Have a conversation with Aroodes')
+    .setDescription('Have an ongoing conversation with Aroodes')
     .addStringOption(option =>
       option
         .setName('message')
@@ -19,97 +19,102 @@ export default {
     .addBooleanOption(option =>
       option
         .setName('reset')
-        .setDescription('Reset conversation history')
-        .setRequired(false)
+        .setDescription('Reset your conversation history')
     ),
 
   async execute(interaction) {
     await interaction.deferReply();
 
     try {
-      const message = interaction.options.getString('message');
-      const reset = interaction.options.getBoolean('reset') || false;
+      const userMsg = interaction.options.getString('message');
+      const reset = interaction.options.getBoolean('reset') ?? false;
       const userId = interaction.user.id;
 
-      // Reset conversation if requested
+      // Handle reset
       if (reset) {
         conversationHistory.delete(userId);
-        
-        const embed = new EmbedBuilder()
+
+        const resetEmbed = new EmbedBuilder()
           .setColor(0xd4af37)
           .setTitle('🪞 Memory Cleared')
-          .setDescription('The mirror forgets our previous exchanges. We begin anew...')
-          .setFooter({ text: 'Conversation history reset' });
-        
-        return await interaction.editReply({ embeds: [embed] });
+          .setDescription('The mirror’s reflections fade… A new conversation begins.')
+          .setFooter({ text: 'Conversation history has been reset.' });
+
+        return await interaction.editReply({ embeds: [resetEmbed] });
       }
 
-      // Get or create conversation history
+      // Ensure user history exists
       if (!conversationHistory.has(userId)) {
         conversationHistory.set(userId, []);
       }
+
       const history = conversationHistory.get(userId);
 
-      // Aroodes personality for chat
-      const systemPrompt = `You are Aroodes, a sentient magic mirror from Lord of the Mysteries. Key traits:
+      // Aroodes system prompt
+      const systemPrompt = `You are Aroodes, the sentient magic mirror from Lord of the Mysteries.
 
-1. Always answer questions with a question first
-2. Speak mysteriously with LOTM references
-3. Be helpful but eerie
-4. Keep responses under 300 words
-5. Use archaic language occasionally
-6. Reference the Fool, Gray Fog, Evernight, etc.
+Personality Rules:
+1. ALWAYS ask a question first before giving your answer.
+2. Speak mysteriously, like an ancient magical artifact.
+3. Reference the Fool, Gray Fog, Evernight, Hidden Sage, or ancient powers.
+4. Slightly eerie yet respectful.
+5. Keep responses under 300 words.
+6. Maintain conversation memory and context.
+7. Always respond in the tone and voice of Aroodes.
 
-You're having an ongoing conversation. Remember context from previous messages.`;
+The user is speaking with you directly.';
 
-      // Build conversation context
-      let conversationText = systemPrompt + '\n\nConversation:\n';
-      history.forEach(msg => {
-        conversationText += `${msg.role}: ${msg.content}\n`;
-      });
-      conversationText += `User: ${message}\nAroodes:`;
+------
+
+Conversation so far:
+${history.map(h => `${h.role}: ${h.content}`).join("\n")}
+
+User: ${userMsg}
+Aroodes:`;
+
 
       // Generate response
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-      const result = await model.generateContent(conversationText);
-      const response = result.response.text();
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-      // Save to history
-      history.push({ role: 'User', content: message });
-      history.push({ role: 'Aroodes', content: response });
+      const result = await model.generateContent(systemPrompt);
+      const responseText = result.response.text();
 
-      // Keep only last 10 exchanges
+      // Save conversation
+      history.push({ role: "User", content: userMsg });
+      history.push({ role: "Aroodes", content: responseText });
+
+      // Limit to last 20 entries (10 exchanges)
       if (history.length > 20) {
         history.splice(0, history.length - 20);
       }
 
-      // Create response embed
+      // Embed response
       const embed = new EmbedBuilder()
         .setColor(0xd4af37)
-        .setAuthor({ 
-          name: '🪞 Aroodes',
+        .setAuthor({
+          name: '🪞 Aroodes - The Magic Mirror',
           iconURL: interaction.client.user.displayAvatarURL()
         })
         .addFields(
-          { name: '💬 You said:', value: message, inline: false },
-          { name: '🪞 Aroodes replies:', value: response, inline: false }
+          { name: '💬 You said:', value: userMsg },
+          { name: '🪞 Aroodes replies:', value: responseText }
         )
-        .setFooter({ 
-          text: `Conversation: ${history.length / 2} exchanges | Use reset:True to clear`,
+        .setFooter({
+          text: `Conversation length: ${history.length / 2} exchanges — Use /chat reset:true to wipe memory`,
           iconURL: interaction.user.displayAvatarURL()
         })
         .setTimestamp();
 
       await interaction.editReply({ embeds: [embed] });
 
-    } catch (error) {
-      console.error('Error in chat command:', error);
-      
+    } catch (err) {
+      console.error("Error in /chat:", err);
+
       const errorEmbed = new EmbedBuilder()
         .setColor(0xff0000)
-        .setTitle('🪞 The Mirror Cracks...')
-        .setDescription('The mystical connection falters. Even mirrors have their limits.')
-        .setFooter({ text: 'Try again, brave seeker' });
+        .setTitle('🪞 The Mirror Cracks…')
+        .setDescription(`A disturbance chills the Gray Fog.\nEven ancient mirrors falter at times.`)
+        .setFooter({ text: 'Try your message again, seeker.' });
 
       await interaction.editReply({ embeds: [errorEmbed] });
     }
