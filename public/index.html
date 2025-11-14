@@ -3,261 +3,487 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aroodes - Lord of the Mysteries</title>
+  <title>Aroodes - The Mystical Mirror</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital@0;1&display=swap');
-    
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: 'Crimson Text', serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      background-size: 400% 400%;
-      animation: gradientShift 15s ease infinite;
-      color: #e9e9e9;
-      min-height: 100vh;
+      font-family: 'IM Fell English', serif;
+      background: #0a0a0a;
+      color: #e8d4a2;
       overflow-x: hidden;
     }
-    
-    @keyframes gradientShift {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+
+    .title-font {
+      font-family: 'Cinzel Decorative', serif;
     }
-    
-    .stars {
+
+    .bg-pattern {
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139, 0, 0, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(75, 0, 130, 0.05) 0%, transparent 50%);
+    }
+
+    .fog-overlay {
       position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
+      background: radial-gradient(ellipse at center, transparent 0%, rgba(10, 10, 10, 0.8) 100%);
       pointer-events: none;
-    }
-    
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: white;
-      border-radius: 50%;
-      animation: twinkle 3s infinite;
-    }
-    
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
-    
-    .container {
-      max-width: 1000px;
-      margin: 50px auto;
-      padding: 40px;
-      position: relative;
       z-index: 1;
     }
-    
-    .header {
-      text-align: center;
-      margin-bottom: 50px;
+
+    .tarot-border {
+      border: 3px solid;
+      border-image: linear-gradient(135deg, #d4af37, #8b0000, #4b0082) 1;
+      position: relative;
     }
-    
-    h1 {
-      font-family: 'Cinzel', serif;
-      font-size: 4em;
-      color: #d4af37;
-      text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
-      margin-bottom: 10px;
-      letter-spacing: 3px;
+
+    .tarot-border::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      right: -6px;
+      bottom: -6px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      pointer-events: none;
     }
-    
-    .subtitle {
-      font-size: 1.3em;
-      color: #b8b8b8;
-      font-style: italic;
+
+    .mystical-glow {
+      box-shadow: 
+        0 0 20px rgba(212, 175, 55, 0.3),
+        inset 0 0 20px rgba(212, 175, 55, 0.1);
     }
-    
-    .card {
-      background: rgba(30, 30, 50, 0.85);
-      border: 2px solid #d4af37;
-      border-radius: 15px;
-      padding: 30px;
-      margin: 30px 0;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(10px);
+
+    .crimson-moon {
+      background: radial-gradient(circle, rgba(139, 0, 0, 0.3) 0%, transparent 70%);
+      animation: pulse 4s ease-in-out infinite;
     }
-    
-    .pathways-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 15px;
-      margin: 30px 0;
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.1); }
     }
-    
-    .pathway-item {
-      background: rgba(212, 175, 55, 0.1);
-      border: 1px solid #d4af37;
-      border-radius: 10px;
-      padding: 15px;
-      text-align: center;
-      transition: all 0.3s;
-      cursor: pointer;
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
     }
-    
-    .pathway-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 5px 20px rgba(212, 175, 55, 0.3);
-      background: rgba(212, 175, 55, 0.2);
+
+    .float {
+      animation: float 6s ease-in-out infinite;
     }
-    
-    .pathway-emoji {
-      font-size: 2em;
-      margin-bottom: 10px;
+
+    .pathway-card {
+      background: linear-gradient(135deg, rgba(20, 20, 30, 0.9) 0%, rgba(40, 30, 20, 0.9) 100%);
+      border: 2px solid rgba(212, 175, 55, 0.3);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
     }
-    
-    .pathway-name {
-      font-family: 'Cinzel', serif;
-      color: #d4af37;
-      font-size: 0.9em;
+
+    .pathway-card::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
     }
-    
-    .btn {
-      display: inline-block;
-      padding: 18px 40px;
-      background: linear-gradient(135deg, #d4af37, #f0c75e);
-      color: #1a1a2e;
-      text-decoration: none;
-      border-radius: 10px;
-      font-family: 'Cinzel', serif;
-      font-size: 1.2em;
-      font-weight: bold;
-      transition: all 0.3s;
-      box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
-      text-align: center;
-      display: block;
-      max-width: 400px;
-      margin: 30px auto;
+
+    .pathway-card:hover::before {
+      width: 300px;
+      height: 300px;
     }
-    
-    .btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 30px rgba(212, 175, 55, 0.6);
+
+    .pathway-card:hover {
+      transform: translateY(-10px) scale(1.05);
+      border-color: #d4af37;
+      box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(212, 175, 55, 0.4),
+        inset 0 0 20px rgba(212, 175, 55, 0.1);
     }
-    
-    .quote {
-      font-style: italic;
-      color: #b8b8b8;
-      text-align: center;
-      margin: 30px 0;
-      font-size: 1.1em;
-      padding: 20px;
-      border-left: 3px solid #d4af37;
-      background: rgba(212, 175, 55, 0.05);
+
+    .ancient-text {
+      text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+      letter-spacing: 2px;
     }
-    
-    .features {
-      list-style: none;
-    }
-    
-    .features li {
-      padding: 15px;
-      margin: 10px 0;
-      background: rgba(212, 175, 55, 0.1);
-      border-left: 4px solid #d4af37;
-      border-radius: 5px;
-    }
-    
-    .features li:before {
-      content: "⭐";
-      margin-right: 10px;
+
+    .divider {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #d4af37, transparent);
+      margin: 3rem 0;
     }
   </style>
-</head>
-<body>
-  <div class="stars" id="stars"></div>
-  
-  <div class="container">
-    <div class="header">
-      <h1>🌙 AROODES 🌙</h1>
-      <p class="subtitle">Above the Gray Fog, Below the Crimson Moon</p>
-    </div>
-    
-    <div class="card">
-      <h2 style="color: #d4af37; font-family: 'Cinzel', serif; margin-bottom: 20px;">
-        Welcome to the Pathway System
-      </h2>
-      <p style="line-height: 1.8; font-size: 1.1em;">
-        Connect your Discord account to begin your journey as a Beyonder. 
-        Your progression through the sequences will be tracked, and roles will be 
-        automatically assigned based on your spiritual advancement.
-      </p>
-    </div>
-    
-    <div class="card">
-      <h3 style="color: #d4af37; font-family: 'Cinzel', serif; margin-bottom: 20px; text-align: center;">
-        All 22 Beyonder Pathways
-      </h3>
-      <div class="pathways-grid">
-        <div class="pathway-item"><div class="pathway-emoji">🃏</div><div class="pathway-name">Fool</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">⚡</div><div class="pathway-name">Error</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">🚪</div><div class="pathway-name">Door</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">👁️</div><div class="pathway-name">Visionary</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">☀️</div><div class="pathway-name">Sun</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">⚔️</div><div class="pathway-name">Tyrant</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">🗼</div><div class="pathway-name">White Tower</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">🎣</div><div class="pathway-name">Hanged Man</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">🌑</div><div class="pathway-name">Darkness</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">💀</div><div class="pathway-name">Death</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">⚒️</div><div class="pathway-name">Twilight Giant</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">💃</div><div class="pathway-name">Demoness</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">🔥</div><div class="pathway-name">Red Priest</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">🌙</div><div class="pathway-name">Moon</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">🌾</div><div class="pathway-name">Mother</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">🕳️</div><div class="pathway-name">Abyss</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">⛓️</div><div class="pathway-name">Chained</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">⚖️</div><div class="pathway-name">Justiciar</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">🛡️</div><div class="pathway-name">Paragon</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">👑</div><div class="pathway-name">Black Emperor</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">📚</div><div class="pathway-name">Hermit</div></div>
-        <div class="pathway-item"><div class="pathway-emoji">🎰</div><div class="pathway-name">Wheel of Fortune</div></div>
-      </div>
-    </div>
-    
-    <div class="card">
-      <h3 style="color: #d4af37; font-family: 'Cinzel', serif; margin-bottom: 20px;">
-        System Features
-      </h3>
-      <ul class="features">
-        <li><strong>22 Complete Pathways:</strong> All beyonder pathways with 10 sequences each</li>
-        <li><strong>Lose Control System:</strong> Risk increases with power</li>
-        <li><strong>Admin-Based Advancement:</strong> Progression managed by admins</li>
-        <li><strong>Linked Roles:</strong> Automatic Discord role assignment</li>
-        <li><strong>Statistics Tracking:</strong> Full history of advancements</li>
-        <li><strong>SQLite Database:</strong> Persistent data storage</li>
-      </ul>
-    </div>
-    
-    <div class="quote">
-      "In the depths of the mysterious fog, I shall become the Fool that holds all mysteries."
-      <br>
-      <small>— The Fool</small>
-    </div>
-    
-    <a href="/linked-role" class="btn">🔮 Connect Your Pathway</a>
-    
-    <div class="quote" style="margin-top: 50px; border: none; font-size: 0.9em;">
-      By connecting, you authorize Aroodes to track your Beyonder progression 
-      and assign pathway-specific roles.
-    </div>
-  </div>
-  
+
   <script>
-    // Generate stars
-    const starsContainer = document.getElementById('stars');
-    for (let i = 0; i < 100; i++) {
-      const star = document.createElement('div');
-      star.className = 'star';
-      star.style.left = Math.random() * 100 + '%';
-      star.style.top = Math.random() * 100 + '%';
-      star.style.animationDelay = Math.random() * 3 + 's';
-      starsContainer.appendChild(star);
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: '#d4af37',
+            crimson: '#8b0000',
+            mystical: '#4b0082',
+            fog: '#2a2a2a'
+          }
+        }
+      }
     }
   </script>
+</head>
+<body class="bg-pattern">
+
+  <!-- Fog Overlay -->
+  <div class="fog-overlay"></div>
+
+  <!-- Crimson Moon Background -->
+  <div class="fixed top-10 right-10 w-64 h-64 crimson-moon rounded-full opacity-30 pointer-events-none"></div>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Pathway SVG Icons
+    const PathwayIcons = {
+      fool: () => (
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#d4af37" strokeWidth="2"/>
+          <path d="M50 20 L50 80 M20 50 L80 50" stroke="#d4af37" strokeWidth="2"/>
+          <circle cx="50" cy="30" r="5" fill="#d4af37"/>
+          <circle cx="50" cy="70" r="5" fill="#d4af37"/>
+          <circle cx="30" cy="50" r="5" fill="#d4af37"/>
+          <circle cx="70" cy="50" r="5" fill="#d4af37"/>
+          <text x="50" y="55" textAnchor="middle" fill="#d4af37" fontSize="24" fontFamily="serif">🃏</text>
+        </svg>
+      ),
+      error: () => (
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <polygon points="50,10 90,90 10,90" fill="none" stroke="#d4af37" strokeWidth="2"/>
+          <path d="M50 30 L50 60 M50 70 L50 75" stroke="#d4af37" strokeWidth="3"/>
+          <circle cx="50" cy="50" r="20" fill="none" stroke="#d4af37" strokeWidth="1" strokeDasharray="3,3"/>
+          <text x="50" y="55" textAnchor="middle" fill="#d4af37" fontSize="24">⚡</text>
+        </svg>
+      ),
+      door: () => (
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <rect x="20" y="10" width="60" height="80" fill="none" stroke="#d4af37" strokeWidth="2" rx="5"/>
+          <circle cx="70" cy="50" r="4" fill="#d4af37"/>
+          <path d="M30 20 L30 80 M40 20 L40 80 M60 20 L60 80 M70 20 L70 80" stroke="#d4af37" strokeWidth="1" opacity="0.3"/>
+          <text x="50" y="60" textAnchor="middle" fill="#d4af37" fontSize="28">🚪</text>
+        </svg>
+      ),
+      visionary: () => (
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="#d4af37" strokeWidth="2"/>
+          <ellipse cx="50" cy="50" rx="30" ry="15" fill="none" stroke="#d4af37" strokeWidth="2"/>
+          <circle cx="50" cy="50" r="10" fill="#d4af37"/>
+          <path d="M20 50 Q50 30, 80 50 T50 70" fill="none" stroke="#d4af37" strokeWidth="1"/>
+          <text x="50" y="55" textAnchor="middle" fill="#0a0a0a" fontSize="16" fontWeight="bold">👁️</text>
+        </svg>
+      ),
+      sun: () => (
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <circle cx="50" cy="50" r="20" fill="#d4af37"/>
+          {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => {
+            const rad = (angle * Math.PI) / 180;
+            const x1 = 50 + Math.cos(rad) * 25;
+            const y1 = 50 + Math.sin(rad) * 25;
+            const x2 = 50 + Math.cos(rad) * 40;
+            const y2 = 50 + Math.sin(rad) * 40;
+            return <line key={angle} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d4af37" strokeWidth="3"/>;
+          })}
+          <text x="50" y="58" textAnchor="middle" fill="#0a0a0a" fontSize="20">☀️</text>
+        </svg>
+      ),
+      moon: () => (
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#d4af37" strokeWidth="2"/>
+          <path d="M50 15 A35 35 0 0 1 50 85 A25 25 0 0 0 50 15" fill="#d4af37" opacity="0.6"/>
+          <circle cx="40" cy="35" r="3" fill="#0a0a0a"/>
+          <circle cx="35" cy="50" r="2" fill="#0a0a0a"/>
+          <text x="50" y="60" textAnchor="middle" fill="#d4af37" fontSize="24">🌙</text>
+        </svg>
+      )
+    };
+
+    // All 22 Pathways
+    const PATHWAYS = [
+      { id: 'fool', name: 'Fool', emoji: '🃏', group: 'The Fool', color: 'from-yellow-600 to-yellow-800' },
+      { id: 'error', name: 'Error', emoji: '⚡', group: 'The Fool', color: 'from-purple-600 to-indigo-800' },
+      { id: 'door', name: 'Door', emoji: '🚪', group: 'The Fool', color: 'from-blue-600 to-cyan-800' },
+      { id: 'visionary', name: 'Visionary', emoji: '👁️', group: 'The Fool', color: 'from-indigo-600 to-purple-800' },
+      { id: 'sun', name: 'Sun', emoji: '☀️', group: 'Sun', color: 'from-yellow-500 to-orange-600' },
+      { id: 'tyrant', name: 'Tyrant', emoji: '⚔️', group: 'Storms', color: 'from-blue-500 to-blue-800' },
+      { id: 'white_tower', name: 'White Tower', emoji: '🗼', group: 'Knowledge', color: 'from-gray-400 to-gray-600' },
+      { id: 'hanged_man', name: 'Hanged Man', emoji: '🎣', group: 'Storms', color: 'from-teal-600 to-blue-700' },
+      { id: 'darkness', name: 'Darkness', emoji: '🌑', group: 'Evernight', color: 'from-gray-800 to-black' },
+      { id: 'death', name: 'Death', emoji: '💀', group: 'Death', color: 'from-gray-600 to-gray-900' },
+      { id: 'twilight_giant', name: 'Twilight Giant', emoji: '⚒️', group: 'Combat', color: 'from-orange-700 to-red-900' },
+      { id: 'demoness', name: 'Demoness', emoji: '💃', group: 'Demoness', color: 'from-pink-600 to-purple-800' },
+      { id: 'red_priest', name: 'Red Priest', emoji: '🔥', group: 'War', color: 'from-red-600 to-red-900' },
+      { id: 'moon', name: 'Moon', emoji: '🌙', group: 'Mother', color: 'from-purple-500 to-indigo-700' },
+      { id: 'mother', name: 'Mother', emoji: '🌾', group: 'Mother', color: 'from-green-600 to-emerald-800' },
+      { id: 'abyss', name: 'Abyss', emoji: '🕳️', group: 'Chained', color: 'from-gray-900 to-black' },
+      { id: 'chained', name: 'Chained', emoji: '⛓️', group: 'Chained', color: 'from-gray-700 to-gray-900' },
+      { id: 'justiciar', name: 'Justiciar', emoji: '⚖️', group: 'Sun', color: 'from-yellow-600 to-amber-700' },
+      { id: 'paragon', name: 'Paragon', emoji: '🛡️', group: 'Steam', color: 'from-slate-500 to-slate-700' },
+      { id: 'black_emperor', name: 'Black Emperor', emoji: '👑', group: 'Emperor', color: 'from-purple-900 to-black' },
+      { id: 'hermit', name: 'Hermit', emoji: '📚', group: 'Sage', color: 'from-amber-700 to-orange-900' },
+      { id: 'wheel_of_fortune', name: 'Wheel of Fortune', emoji: '🎰', group: 'Antigonus', color: 'from-emerald-600 to-teal-800' }
+    ];
+
+    function App() {
+      const [selectedPathway, setSelectedPathway] = useState(null);
+
+      return (
+        <div className="relative z-10 min-h-screen">
+          <Header />
+          <Hero />
+          <PathwaysSection 
+            pathways={PATHWAYS} 
+            selected={selectedPathway}
+            onSelect={setSelectedPathway}
+          />
+          <CTASection />
+          <Footer />
+        </div>
+      );
+    }
+
+    function Header() {
+      return (
+        <header className="relative z-20 py-6 px-4">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <div className="title-font text-2xl text-gold ancient-text">🌙 AROODES</div>
+            <nav className="flex gap-6 text-sm">
+              <a href="#pathways" className="hover:text-gold transition">Pathways</a>
+              <a href="#connect" className="hover:text-gold transition">Connect</a>
+            </nav>
+          </div>
+        </header>
+      );
+    }
+
+    function Hero() {
+      return (
+        <div className="relative z-10 text-center py-20 px-4">
+          <div className="float max-w-4xl mx-auto">
+            <div className="mb-8">
+              <svg viewBox="0 0 200 200" className="w-32 h-32 mx-auto">
+                <defs>
+                  <radialGradient id="moonGlow">
+                    <stop offset="0%" stopColor="#d4af37" stopOpacity="0.8"/>
+                    <stop offset="100%" stopColor="#d4af37" stopOpacity="0"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="100" cy="100" r="80" fill="url(#moonGlow)"/>
+                <circle cx="100" cy="100" r="60" fill="none" stroke="#d4af37" strokeWidth="3"/>
+                <text x="100" y="120" textAnchor="middle" fill="#d4af37" fontSize="60">🌙</text>
+              </svg>
+            </div>
+
+            <h1 className="title-font text-6xl md:text-8xl mb-6 ancient-text bg-gradient-to-r from-gold via-yellow-500 to-gold bg-clip-text text-transparent">
+              AROODES
+            </h1>
+            
+            <p className="text-2xl md:text-3xl mb-4 italic text-gray-400">
+              The Mystical Mirror
+            </p>
+
+            <div className="divider"></div>
+
+            <p className="text-xl md:text-2xl leading-relaxed text-gray-300 max-w-3xl mx-auto">
+              Above the Gray Fog, beneath the Crimson Moon, twenty-two pathways await those 
+              who dare to tread the mystical world. Choose wisely, for the beyonder's journey 
+              is irreversible...
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    function PathwaysSection({ pathways, selected, onSelect }) {
+      return (
+        <section id="pathways" className="relative z-10 py-20 px-4">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="title-font text-4xl md:text-5xl text-center mb-4 ancient-text text-gold">
+              The Twenty-Two Pathways
+            </h2>
+            
+            <p className="text-center text-gray-400 mb-12 text-lg italic">
+              "Each pathway leads to divinity, yet each step invites madness..."
+            </p>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {pathways.map(pathway => (
+                <PathwayCard 
+                  key={pathway.id} 
+                  pathway={pathway}
+                  isSelected={selected === pathway.id}
+                  onClick={() => onSelect(pathway.id)}
+                />
+              ))}
+            </div>
+
+            {selected && (
+              <PathwayDetails 
+                pathway={pathways.find(p => p.id === selected)}
+                onClose={() => onSelect(null)}
+              />
+            )}
+          </div>
+        </section>
+      );
+    }
+
+    function PathwayCard({ pathway, isSelected, onClick }) {
+      const IconComponent = PathwayIcons[pathway.id] || PathwayIcons.fool;
+
+      return (
+        <div 
+          onClick={onClick}
+          className={`pathway-card rounded-lg p-6 cursor-pointer ${isSelected ? 'ring-4 ring-gold' : ''}`}
+        >
+          <div className="relative z-10">
+            <div className="w-20 h-20 mx-auto mb-4">
+              <IconComponent />
+            </div>
+            
+            <h3 className="title-font text-center text-gold text-lg mb-2">
+              {pathway.name}
+            </h3>
+            
+            <p className="text-center text-xs text-gray-500 italic">
+              {pathway.group}
+            </p>
+
+            <div className={`mt-4 h-1 rounded-full bg-gradient-to-r ${pathway.color}`}></div>
+          </div>
+        </div>
+      );
+    }
+
+    function PathwayDetails({ pathway, onClose }) {
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-80" onClick={onClose}>
+          <div 
+            className="tarot-border mystical-glow bg-gradient-to-b from-gray-900 to-black rounded-lg p-8 max-w-2xl w-full relative"
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              onClick={onClose}
+              className="absolute top-4 right-4 text-gold hover:text-yellow-500 text-2xl"
+            >
+              ✕
+            </button>
+
+            <div className="text-center">
+              <div className="w-32 h-32 mx-auto mb-6">
+                {PathwayIcons[pathway.id] ? PathwayIcons[pathway.id]() : <div className="text-6xl">{pathway.emoji}</div>}
+              </div>
+
+              <h2 className="title-font text-4xl text-gold mb-2 ancient-text">
+                {pathway.name} Pathway
+              </h2>
+
+              <p className="text-gray-400 mb-6 italic">Divine Group: {pathway.group}</p>
+
+              <div className={`h-2 rounded-full bg-gradient-to-r ${pathway.color} mb-8`}></div>
+
+              <div className="text-left space-y-4 text-gray-300">
+                <p className="italic">
+                  "The {pathway.name} pathway represents one of the twenty-two beyonder sequences, 
+                  each step bringing you closer to divinity—or madness."
+                </p>
+
+                <div className="border-l-4 border-gold pl-4 bg-gold bg-opacity-5 p-4 rounded">
+                  <p className="font-bold text-gold mb-2">Sequence Progression:</p>
+                  <p className="text-sm">
+                    Start at Sequence 9 and advance through spiritual accumulation, 
+                    rituals, and server participation. Each advancement increases your power 
+                    but also your risk of losing control...
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function CTASection() {
+      return (
+        <section id="connect" className="relative z-10 py-20 px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="tarot-border mystical-glow bg-gradient-to-b from-gray-900 to-black rounded-lg p-12">
+              <h2 className="title-font text-4xl text-gold mb-6 ancient-text">
+                Begin Your Mystical Journey
+              </h2>
+
+              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+                Connect your Discord account to synchronize your beyonder progression. 
+                The Gray Fog awaits, and the pathways call to those brave enough to answer...
+              </p>
+
+              <a 
+                href="/linked-role"
+                className="inline-block px-12 py-4 bg-gradient-to-r from-gold via-yellow-600 to-gold text-black font-bold text-xl rounded-lg hover:scale-110 transition-all duration-300 shadow-2xl mystical-glow title-font"
+              >
+                🔮 Connect to Aroodes
+              </a>
+
+              <p className="mt-8 text-sm text-gray-500 italic">
+                "In the depths of the mysterious fog, greatness awaits..."
+              </p>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function Footer() {
+      return (
+        <footer className="relative z-10 py-12 px-4 text-center border-t border-gold border-opacity-20">
+          <p className="text-gray-500 text-sm">
+            🌙 Aroodes - The Mystical Mirror of Lord of the Mysteries
+          </p>
+          <p className="text-gray-600 text-xs mt-2 italic">
+            Above the Gray Fog, the Fool watches eternally...
+          </p>
+        </footer>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+
 </body>
 </html>
