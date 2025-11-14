@@ -2,27 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aroodes - The Mystical Mirror</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>Aroodes - Above the Gray Fog</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- React & ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
-  <!-- Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=Uncial+Antiqua&display=swap" rel="stylesheet">
   
   <style>
-    * {
-      margin: 0;
-      padding: 0;
+    * { 
+      margin: 0; 
+      padding: 0; 
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    @media (max-width: 768px) {
+      html { font-size: 14px; }
     }
 
     body {
@@ -32,113 +37,243 @@
       overflow-x: hidden;
     }
 
-    .title-font {
-      font-family: 'Cinzel Decorative', serif;
+    .title-font { font-family: 'Cinzel Decorative', serif; }
+    .ancient-font { font-family: 'Uncial Antiqua', serif; }
+
+    /* Gray Fog Animation */
+    @keyframes fogMove {
+      0%, 100% { transform: translateX(0) translateY(0); opacity: 0.3; }
+      50% { transform: translateX(-50px) translateY(-30px); opacity: 0.6; }
     }
 
-    .bg-pattern {
-      background-image: 
-        radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(139, 0, 0, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 40% 20%, rgba(75, 0, 130, 0.05) 0%, transparent 50%);
+    @media (max-width: 768px) {
+      @keyframes fogMove {
+        0%, 100% { transform: translateX(0) translateY(0); opacity: 0.2; }
+        50% { transform: translateX(-30px) translateY(-20px); opacity: 0.4; }
+      }
     }
 
-    .fog-overlay {
+    .gray-fog {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(ellipse at center, transparent 0%, rgba(10, 10, 10, 0.8) 100%);
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse at center, rgba(128, 128, 128, 0.1) 0%, transparent 50%);
+      animation: fogMove 20s ease-in-out infinite;
       pointer-events: none;
       z-index: 1;
     }
 
-    .tarot-border {
-      border: 3px solid;
-      border-image: linear-gradient(135deg, #d4af37, #8b0000, #4b0082) 1;
-      position: relative;
+    @media (max-width: 768px) {
+      .gray-fog {
+        width: 100%;
+        height: 100%;
+      }
     }
 
-    .tarot-border::before {
-      content: '';
-      position: absolute;
-      top: -6px;
-      left: -6px;
-      right: -6px;
-      bottom: -6px;
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      pointer-events: none;
-    }
-
-    .mystical-glow {
-      box-shadow: 
-        0 0 20px rgba(212, 175, 55, 0.3),
-        inset 0 0 20px rgba(212, 175, 55, 0.1);
+    /* Crimson Moon */
+    @keyframes moonPulse {
+      0%, 100% { opacity: 0.4; transform: scale(1) translateY(0); filter: blur(30px); }
+      50% { opacity: 0.7; transform: scale(1.2) translateY(-10px); filter: blur(40px); }
     }
 
     .crimson-moon {
-      background: radial-gradient(circle, rgba(139, 0, 0, 0.3) 0%, transparent 70%);
-      animation: pulse 4s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.5; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.1); }
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-20px) rotate(5deg); }
-    }
-
-    .float {
-      animation: float 6s ease-in-out infinite;
-    }
-
-    .pathway-card {
-      background: linear-gradient(135deg, rgba(20, 20, 30, 0.9) 0%, rgba(40, 30, 20, 0.9) 100%);
-      border: 2px solid rgba(212, 175, 55, 0.3);
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .pathway-card::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%);
-      transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
-    }
-
-    .pathway-card:hover::before {
+      position: fixed;
+      top: 5%;
+      right: 10%;
       width: 300px;
       height: 300px;
+      background: radial-gradient(circle, rgba(139, 0, 0, 0.6) 0%, rgba(75, 0, 130, 0.3) 40%, transparent 70%);
+      border-radius: 50%;
+      animation: moonPulse 6s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 1;
     }
 
-    .pathway-card:hover {
-      transform: translateY(-10px) scale(1.05);
-      border-color: #d4af37;
+    @media (max-width: 768px) {
+      .crimson-moon {
+        width: 150px;
+        height: 150px;
+        right: 5%;
+        filter: blur(20px);
+      }
+    }
+
+    /* Tarot Card Style */
+    .tarot-card {
+      background: linear-gradient(135deg, #1a1410 0%, #2a1810 100%);
+      border: 3px solid;
+      border-image: linear-gradient(135deg, #d4af37 0%, #8b4513 50%, #d4af37 100%) 1;
+      position: relative;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.5),
-        0 0 30px rgba(212, 175, 55, 0.4),
-        inset 0 0 20px rgba(212, 175, 55, 0.1);
+        0 0 20px rgba(212, 175, 55, 0.2),
+        inset 0 0 30px rgba(0, 0, 0, 0.5);
+      touch-action: manipulation;
     }
 
-    .ancient-text {
-      text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
-      letter-spacing: 2px;
+    @media (max-width: 768px) {
+      .tarot-card {
+        border-width: 2px;
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+      }
     }
 
-    .divider {
-      height: 2px;
-      background: linear-gradient(90deg, transparent, #d4af37, transparent);
-      margin: 3rem 0;
+    .tarot-card::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(45deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .tarot-card:active {
+      transform: scale(0.95);
+    }
+
+    @media (min-width: 769px) {
+      .tarot-card:hover::before {
+        opacity: 1;
+      }
+
+      .tarot-card:hover {
+        transform: translateY(-15px) rotateY(5deg) scale(1.05);
+        box-shadow: 
+          0 25px 50px rgba(0, 0, 0, 0.8),
+          0 0 40px rgba(212, 175, 55, 0.5),
+          inset 0 0 50px rgba(212, 175, 55, 0.1);
+        border-image: linear-gradient(135deg, #ffd700 0%, #d4af37 50%, #ffd700 100%) 1;
+      }
+    }
+
+    /* Victorian Ornaments */
+    .victorian-border {
+      background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(212, 175, 55, 0.1) 10px, rgba(212, 175, 55, 0.1) 11px),
+        repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(212, 175, 55, 0.1) 10px, rgba(212, 175, 55, 0.1) 11px);
+    }
+
+    .ornament {
+      position: relative;
+    }
+
+    .ornament::before,
+    .ornament::after {
+      content: '✦';
+      position: absolute;
+      color: #d4af37;
+      font-size: 1.5rem;
+      opacity: 0.6;
+    }
+
+    @media (max-width: 768px) {
+      .ornament::before,
+      .ornament::after {
+        display: none;
+      }
+    }
+
+    .ornament::before { left: -30px; }
+    .ornament::after { right: -30px; }
+
+    /* Mystical Glow Text */
+    @keyframes textGlow {
+      0%, 100% { text-shadow: 0 0 10px rgba(212, 175, 55, 0.5), 0 0 20px rgba(212, 175, 55, 0.3); }
+      50% { text-shadow: 0 0 20px rgba(212, 175, 55, 0.8), 0 0 30px rgba(212, 175, 55, 0.5), 0 0 40px rgba(212, 175, 55, 0.3); }
+    }
+
+    .mystical-glow {
+      animation: textGlow 3s ease-in-out infinite;
+    }
+
+    /* Floating Symbols */
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+      50% { transform: translateY(-30px) rotate(180deg); opacity: 0.7; }
+    }
+
+    .floating-symbol {
+      position: absolute;
+      animation: float 8s ease-in-out infinite;
+      color: #d4af37;
+      opacity: 0.3;
+      pointer-events: none;
+      display: none;
+    }
+
+    @media (min-width: 769px) {
+      .floating-symbol {
+        display: block;
+      }
+    }
+
+    /* Sequence Progress Bar */
+    .sequence-bar {
+      background: linear-gradient(90deg, 
+        #0a0a0a 0%, 
+        #d4af37 10%, 
+        #ffd700 20%, 
+        #d4af37 30%, 
+        #8b4513 40%,
+        #0a0a0a 50%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Cards of Blasphemy Effect */
+    .blasphemy-card {
+      background: 
+        linear-gradient(135deg, rgba(139, 0, 0, 0.2) 0%, rgba(75, 0, 130, 0.2) 100%),
+        linear-gradient(45deg, #1a1410 25%, transparent 25%, transparent 75%, #1a1410 75%),
+        linear-gradient(45deg, #1a1410 25%, transparent 25%, transparent 75%, #1a1410 75%);
+      background-size: 100% 100%, 20px 20px, 20px 20px;
+      background-position: 0 0, 0 0, 10px 10px;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: #1a1410; }
+    ::-webkit-scrollbar-thumb { 
+      background: linear-gradient(180deg, #d4af37 0%, #8b4513 100%);
+      border-radius: 5px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
+    /* Pathway Image Container */
+    .pathway-image {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
+      transition: all 0.5s ease;
+    }
+
+    @media (min-width: 769px) {
+      .pathway-image:hover {
+        filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.6));
+        transform: scale(1.1);
+      }
+    }
+
+    /* Safe area for mobile */
+    .safe-area-top {
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* No text selection on touch */
+    .no-select {
+      -webkit-user-select: none;
+      user-select: none;
     }
   </style>
 
@@ -150,340 +285,248 @@
             gold: '#d4af37',
             crimson: '#8b0000',
             mystical: '#4b0082',
-            fog: '#2a2a2a'
+            bronze: '#8b4513'
           }
         }
       }
     }
   </script>
 </head>
-<body class="bg-pattern">
+<body>
 
-  <!-- Fog Overlay -->
-  <div class="fog-overlay"></div>
+  <!-- Gray Fog -->
+  <div class="gray-fog"></div>
+  <div class="gray-fog" style="animation-delay: -10s;"></div>
 
-  <!-- Crimson Moon Background -->
-  <div class="fixed top-10 right-10 w-64 h-64 crimson-moon rounded-full opacity-30 pointer-events-none"></div>
+  <!-- Crimson Moon -->
+  <div class="crimson-moon"></div>
+
+  <!-- Floating Mystical Symbols (Desktop only) -->
+  <div class="floating-symbol text-3xl md:text-4xl" style="top: 20%; left: 10%; animation-delay: 0s;">☽</div>
+  <div class="floating-symbol text-2xl md:text-3xl" style="top: 60%; right: 15%; animation-delay: -3s;">✦</div>
+  <div class="floating-symbol text-4xl md:text-5xl" style="bottom: 30%; left: 20%; animation-delay: -6s;">◈</div>
+  <div class="floating-symbol text-xl md:text-2xl" style="top: 40%; right: 30%; animation-delay: -9s;">❂</div>
 
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
 
-    // Pathway SVG Icons
-    const PathwayIcons = {
-      fool: () => (
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <circle cx="50" cy="50" r="45" fill="none" stroke="#d4af37" strokeWidth="2"/>
-          <path d="M50 20 L50 80 M20 50 L80 50" stroke="#d4af37" strokeWidth="2"/>
-          <circle cx="50" cy="30" r="5" fill="#d4af37"/>
-          <circle cx="50" cy="70" r="5" fill="#d4af37"/>
-          <circle cx="30" cy="50" r="5" fill="#d4af37"/>
-          <circle cx="70" cy="50" r="5" fill="#d4af37"/>
-          <text x="50" y="55" textAnchor="middle" fill="#d4af37" fontSize="24" fontFamily="serif">🃏</text>
-        </svg>
-      ),
-      error: () => (
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <polygon points="50,10 90,90 10,90" fill="none" stroke="#d4af37" strokeWidth="2"/>
-          <path d="M50 30 L50 60 M50 70 L50 75" stroke="#d4af37" strokeWidth="3"/>
-          <circle cx="50" cy="50" r="20" fill="none" stroke="#d4af37" strokeWidth="1" strokeDasharray="3,3"/>
-          <text x="50" y="55" textAnchor="middle" fill="#d4af37" fontSize="24">⚡</text>
-        </svg>
-      ),
-      door: () => (
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <rect x="20" y="10" width="60" height="80" fill="none" stroke="#d4af37" strokeWidth="2" rx="5"/>
-          <circle cx="70" cy="50" r="4" fill="#d4af37"/>
-          <path d="M30 20 L30 80 M40 20 L40 80 M60 20 L60 80 M70 20 L70 80" stroke="#d4af37" strokeWidth="1" opacity="0.3"/>
-          <text x="50" y="60" textAnchor="middle" fill="#d4af37" fontSize="28">🚪</text>
-        </svg>
-      ),
-      visionary: () => (
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <circle cx="50" cy="50" r="40" fill="none" stroke="#d4af37" strokeWidth="2"/>
-          <ellipse cx="50" cy="50" rx="30" ry="15" fill="none" stroke="#d4af37" strokeWidth="2"/>
-          <circle cx="50" cy="50" r="10" fill="#d4af37"/>
-          <path d="M20 50 Q50 30, 80 50 T50 70" fill="none" stroke="#d4af37" strokeWidth="1"/>
-          <text x="50" y="55" textAnchor="middle" fill="#0a0a0a" fontSize="16" fontWeight="bold">👁️</text>
-        </svg>
-      ),
-      sun: () => (
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <circle cx="50" cy="50" r="20" fill="#d4af37"/>
-          {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => {
-            const rad = (angle * Math.PI) / 180;
-            const x1 = 50 + Math.cos(rad) * 25;
-            const y1 = 50 + Math.sin(rad) * 25;
-            const x2 = 50 + Math.cos(rad) * 40;
-            const y2 = 50 + Math.sin(rad) * 40;
-            return <line key={angle} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d4af37" strokeWidth="3"/>;
-          })}
-          <text x="50" y="58" textAnchor="middle" fill="#0a0a0a" fontSize="20">☀️</text>
-        </svg>
-      ),
-      moon: () => (
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          <circle cx="50" cy="50" r="35" fill="none" stroke="#d4af37" strokeWidth="2"/>
-          <path d="M50 15 A35 35 0 0 1 50 85 A25 25 0 0 0 50 15" fill="#d4af37" opacity="0.6"/>
-          <circle cx="40" cy="35" r="3" fill="#0a0a0a"/>
-          <circle cx="35" cy="50" r="2" fill="#0a0a0a"/>
-          <text x="50" y="60" textAnchor="middle" fill="#d4af37" fontSize="24">🌙</text>
-        </svg>
-      )
-    };
-
-    // All 22 Pathways
+    // All 22 Pathways with local image paths
     const PATHWAYS = [
-      { id: 'fool', name: 'Fool', emoji: '🃏', group: 'The Fool', color: 'from-yellow-600 to-yellow-800' },
-      { id: 'error', name: 'Error', emoji: '⚡', group: 'The Fool', color: 'from-purple-600 to-indigo-800' },
-      { id: 'door', name: 'Door', emoji: '🚪', group: 'The Fool', color: 'from-blue-600 to-cyan-800' },
-      { id: 'visionary', name: 'Visionary', emoji: '👁️', group: 'The Fool', color: 'from-indigo-600 to-purple-800' },
-      { id: 'sun', name: 'Sun', emoji: '☀️', group: 'Sun', color: 'from-yellow-500 to-orange-600' },
-      { id: 'tyrant', name: 'Tyrant', emoji: '⚔️', group: 'Storms', color: 'from-blue-500 to-blue-800' },
-      { id: 'white_tower', name: 'White Tower', emoji: '🗼', group: 'Knowledge', color: 'from-gray-400 to-gray-600' },
-      { id: 'hanged_man', name: 'Hanged Man', emoji: '🎣', group: 'Storms', color: 'from-teal-600 to-blue-700' },
-      { id: 'darkness', name: 'Darkness', emoji: '🌑', group: 'Evernight', color: 'from-gray-800 to-black' },
-      { id: 'death', name: 'Death', emoji: '💀', group: 'Death', color: 'from-gray-600 to-gray-900' },
-      { id: 'twilight_giant', name: 'Twilight Giant', emoji: '⚒️', group: 'Combat', color: 'from-orange-700 to-red-900' },
-      { id: 'demoness', name: 'Demoness', emoji: '💃', group: 'Demoness', color: 'from-pink-600 to-purple-800' },
-      { id: 'red_priest', name: 'Red Priest', emoji: '🔥', group: 'War', color: 'from-red-600 to-red-900' },
-      { id: 'moon', name: 'Moon', emoji: '🌙', group: 'Mother', color: 'from-purple-500 to-indigo-700' },
-      { id: 'mother', name: 'Mother', emoji: '🌾', group: 'Mother', color: 'from-green-600 to-emerald-800' },
-      { id: 'abyss', name: 'Abyss', emoji: '🕳️', group: 'Chained', color: 'from-gray-900 to-black' },
-      { id: 'chained', name: 'Chained', emoji: '⛓️', group: 'Chained', color: 'from-gray-700 to-gray-900' },
-      { id: 'justiciar', name: 'Justiciar', emoji: '⚖️', group: 'Sun', color: 'from-yellow-600 to-amber-700' },
-      { id: 'paragon', name: 'Paragon', emoji: '🛡️', group: 'Steam', color: 'from-slate-500 to-slate-700' },
-      { id: 'black_emperor', name: 'Black Emperor', emoji: '👑', group: 'Emperor', color: 'from-purple-900 to-black' },
-      { id: 'hermit', name: 'Hermit', emoji: '📚', group: 'Sage', color: 'from-amber-700 to-orange-900' },
-      { id: 'wheel_of_fortune', name: 'Wheel of Fortune', emoji: '🎰', group: 'Antigonus', color: 'from-emerald-600 to-teal-800' }
+      { id: 'fool', name: 'The Fool', number: '0', image: '/pathways/fool.png', color: 'from-yellow-600 via-gold to-yellow-800', symbol: '∞' },
+      { id: 'error', name: 'Error', number: 'I', image: '/pathways/error.png', color: 'from-purple-600 via-indigo-700 to-purple-900', symbol: '⚠' },
+      { id: 'door', name: 'Door', number: 'II', image: '/pathways/door.png', color: 'from-cyan-600 via-blue-700 to-indigo-800', symbol: '◉' },
+      { id: 'visionary', name: 'Visionary', number: 'III', image: '/pathways/visionary.png', color: 'from-purple-500 via-indigo-600 to-purple-800', symbol: '◈' },
+      { id: 'sun', name: 'The Sun', number: 'IV', image: '/pathways/sun.png', color: 'from-yellow-400 via-orange-500 to-red-600', symbol: '☼' },
+      { id: 'tyrant', name: 'Tyrant', number: 'V', image: '/pathways/tyrant.png', color: 'from-blue-600 via-cyan-700 to-blue-900', symbol: '⚡' },
+      { id: 'white_tower', name: 'White Tower', number: 'VI', image: '/pathways/white_tower.png', color: 'from-gray-300 via-gray-400 to-gray-600', symbol: '△' },
+      { id: 'hanged_man', name: 'Hanged Man', number: 'VII', image: '/pathways/hanged_man.png', color: 'from-teal-500 via-cyan-600 to-blue-700', symbol: '☿' },
+      { id: 'darkness', name: 'Darkness', number: 'VIII', image: '/pathways/darkness.png', color: 'from-gray-700 via-gray-900 to-black', symbol: '☾' },
+      { id: 'death', name: 'Death', number: 'IX', image: '/pathways/death.png', color: 'from-gray-600 via-gray-800 to-black', symbol: '☠' },
+      { id: 'twilight', name: 'Twilight Giant', number: 'X', image: '/pathways/twilight_giant.png', color: 'from-orange-600 via-red-700 to-red-900', symbol: '⚒' },
+      { id: 'demoness', name: 'Demoness', number: 'XI', image: '/pathways/demoness.png', color: 'from-pink-500 via-purple-600 to-purple-900', symbol: '✧' },
+      { id: 'red_priest', name: 'Red Priest', number: 'XII', image: '/pathways/red_priest.png', color: 'from-red-500 via-red-700 to-red-900', symbol: '✠' },
+      { id: 'moon', name: 'The Moon', number: 'XIII', image: '/pathways/moon.png', color: 'from-purple-400 via-indigo-600 to-purple-800', symbol: '☽' },
+      { id: 'mother', name: 'Mother', number: 'XIV', image: '/pathways/mother.png', color: 'from-green-500 via-emerald-700 to-green-900', symbol: '❀' },
+      { id: 'abyss', name: 'Abyss', number: 'XV', image: '/pathways/abyss.png', color: 'from-gray-800 via-black to-gray-900', symbol: '◉' },
+      { id: 'chained', name: 'Chained', number: 'XVI', image: '/pathways/chained.png', color: 'from-gray-600 via-gray-800 to-black', symbol: '⛓' },
+      { id: 'justiciar', name: 'Justiciar', number: 'XVII', image: '/pathways/justiciar.png', color: 'from-yellow-500 via-amber-600 to-orange-700', symbol: '⚖' },
+      { id: 'paragon', name: 'Paragon', number: 'XVIII', image: '/pathways/paragon.png', color: 'from-slate-400 via-slate-600 to-slate-800', symbol: '◆' },
+      { id: 'black_emperor', name: 'Black Emperor', number: 'XIX', image: '/pathways/black_emperor.png', color: 'from-purple-800 via-indigo-900 to-black', symbol: '♔' },
+      { id: 'hermit', name: 'The Hermit', number: 'XX', image: '/pathways/hermit.png', color: 'from-amber-600 via-orange-800 to-brown-900', symbol: '✎' },
+      { id: 'wheel', name: 'Wheel of Fortune', number: 'XXI', image: '/pathways/wheel_of_fortune.png', color: 'from-emerald-500 via-teal-700 to-cyan-900', symbol: '☸' }
     ];
 
     function App() {
       const [selectedPathway, setSelectedPathway] = useState(null);
+      const [showIntro, setShowIntro] = useState(true);
+      const [menuOpen, setMenuOpen] = useState(false);
+
+      useEffect(() => {
+        const timer = setTimeout(() => setShowIntro(false), 3000);
+        return () => clearTimeout(timer);
+      }, []);
 
       return (
         <div className="relative z-10 min-h-screen">
-          <Header />
+          {showIntro && <IntroAnimation />}
+          <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
           <Hero />
-          <PathwaysSection 
-            pathways={PATHWAYS} 
-            selected={selectedPathway}
-            onSelect={setSelectedPathway}
-          />
-          <CTASection />
+          <TarotSection pathways={PATHWAYS} onSelect={setSelectedPathway} />
+          <SequenceInfo />
+          <CallToAction />
           <Footer />
+          
+          {selectedPathway && (
+            <PathwayModal 
+              pathway={PATHWAYS.find(p => p.id === selectedPathway)} 
+              onClose={() => setSelectedPathway(null)} 
+            />
+          )}
         </div>
       );
     }
 
-    function Header() {
+    function IntroAnimation() {
       return (
-        <header className="relative z-20 py-6 px-4">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <div className="title-font text-2xl text-gold ancient-text">🌙 AROODES</div>
-            <nav className="flex gap-6 text-sm">
-              <a href="#pathways" className="hover:text-gold transition">Pathways</a>
-              <a href="#connect" className="hover:text-gold transition">Connect</a>
-            </nav>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
+          <div className="text-center">
+            <div className="mystical-glow text-5xl md:text-6xl mb-8">🌙</div>
+            <p className="text-gold text-xl md:text-2xl ancient-font mystical-glow">
+              Above the Gray Fog...
+            </p>
           </div>
+        </div>
+      );
+    }
+
+    function Header({ menuOpen, setMenuOpen }) {
+      return (
+        <header className="relative z-20 safe-area-top bg-black bg-opacity-80 backdrop-blur-sm sticky top-0 victorian-border border-b border-gold border-opacity-30">
+          <div className="px-4 py-4 md:py-8">
+            <div className="max-w-7xl mx-auto flex justify-between items-center">
+              <div className="flex items-center gap-3 md:gap-4">
+                <div className="text-3xl md:text-4xl mystical-glow">🪞</div>
+                <div>
+                  <h1 className="title-font text-2xl md:text-3xl text-gold mystical-glow">AROODES</h1>
+                  <p className="text-xs italic text-gray-500 hidden md:block">The Mystical Mirror</p>
+                </div>
+              </div>
+              
+              {/* Desktop Nav */}
+              <nav className="hidden md:flex gap-6 text-sm ancient-font">
+                <a href="#tarot" className="hover:text-gold transition ornament">Pathways</a>
+                <a href="#connect" className="hover:text-gold transition ornament">Connect</a>
+              </nav>
+
+              {/* Mobile Menu Button */}
+              <button 
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="md:hidden text-gold text-2xl"
+              >
+                {menuOpen ? '✕' : '☰'}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Menu */}
+          {menuOpen && (
+            <div className="md:hidden bg-black bg-opacity-95 border-t border-gold border-opacity-20">
+              <nav className="px-4 py-6 space-y-4">
+                <a 
+                  href="#tarot" 
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-lg hover:text-gold transition"
+                >
+                  ✦ Pathways
+                </a>
+                <a 
+                  href="#connect" 
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-lg hover:text-gold transition"
+                >
+                  ✦ Connect
+                </a>
+              </nav>
+            </div>
+          )}
         </header>
       );
     }
 
     function Hero() {
       return (
-        <div className="relative z-10 text-center py-20 px-4">
-          <div className="float max-w-4xl mx-auto">
-            <div className="mb-8">
-              <svg viewBox="0 0 200 200" className="w-32 h-32 mx-auto">
-                <defs>
-                  <radialGradient id="moonGlow">
-                    <stop offset="0%" stopColor="#d4af37" stopOpacity="0.8"/>
-                    <stop offset="100%" stopColor="#d4af37" stopOpacity="0"/>
-                  </radialGradient>
-                </defs>
-                <circle cx="100" cy="100" r="80" fill="url(#moonGlow)"/>
-                <circle cx="100" cy="100" r="60" fill="none" stroke="#d4af37" strokeWidth="3"/>
-                <text x="100" y="120" textAnchor="middle" fill="#d4af37" fontSize="60">🌙</text>
-              </svg>
+        <div className="relative z-10 py-12 md:py-20 px-4 text-center">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8 md:mb-12">
+              <h1 className="title-font text-5xl sm:text-6xl md:text-7xl lg:text-9xl mb-4 md:mb-6 mystical-glow bg-gradient-to-b from-gold via-yellow-500 to-gold bg-clip-text text-transparent">
+                AROODES
+              </h1>
+              <div className="flex items-center justify-center gap-3 md:gap-4 text-lg md:text-2xl text-gray-400">
+                <span className="text-gold">✦</span>
+                <p className="italic ancient-font">The Mystical Mirror of Secrets</p>
+                <span className="text-gold">✦</span>
+              </div>
             </div>
 
-            <h1 className="title-font text-6xl md:text-8xl mb-6 ancient-text bg-gradient-to-r from-gold via-yellow-500 to-gold bg-clip-text text-transparent">
-              AROODES
-            </h1>
-            
-            <p className="text-2xl md:text-3xl mb-4 italic text-gray-400">
-              The Mystical Mirror
-            </p>
+            <div className="tarot-card blasphemy-card p-6 md:p-8 max-w-3xl mx-auto mb-8 md:mb-12">
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed italic text-gray-300">
+                "Above the Gray Fog, beneath the Crimson Moon, twenty-two pathways lead to divinity. 
+                But beware, for each step forward invites madness, and the beyonder's journey 
+                is written in the <span className="text-gold mystical-glow">Cards of Blasphemy</span>..."
+              </p>
+              <div className="mt-4 md:mt-6 text-gold text-xs md:text-sm ancient-font">
+                — The Fool, Sequence 0
+              </div>
+            </div>
 
-            <div className="divider"></div>
-
-            <p className="text-xl md:text-2xl leading-relaxed text-gray-300 max-w-3xl mx-auto">
-              Above the Gray Fog, beneath the Crimson Moon, twenty-two pathways await those 
-              who dare to tread the mystical world. Choose wisely, for the beyonder's journey 
-              is irreversible...
-            </p>
+            <div className="flex justify-center gap-8 md:gap-12 text-4xl md:text-5xl text-gold opacity-60">
+              <span className="mystical-glow">☽</span>
+              <span className="mystical-glow">✦</span>
+              <span className="mystical-glow">◈</span>
+              <span className="mystical-glow">☾</span>
+            </div>
           </div>
         </div>
       );
     }
 
-    function PathwaysSection({ pathways, selected, onSelect }) {
+    function TarotSection({ pathways, onSelect }) {
       return (
-        <section id="pathways" className="relative z-10 py-20 px-4">
+        <section id="tarot" className="relative z-10 py-12 md:py-20 px-4">
           <div className="max-w-7xl mx-auto">
-            <h2 className="title-font text-4xl md:text-5xl text-center mb-4 ancient-text text-gold">
-              The Twenty-Two Pathways
-            </h2>
-            
-            <p className="text-center text-gray-400 mb-12 text-lg italic">
-              "Each pathway leads to divinity, yet each step invites madness..."
-            </p>
+            <div className="text-center mb-10 md:mb-16">
+              <h2 className="title-font text-3xl sm:text-4xl md:text-5xl mystical-glow text-gold mb-3 md:mb-4">
+                The Cards of Blasphemy
+              </h2>
+              <p className="text-lg md:text-xl text-gray-400 italic">Twenty-Two Pathways to Godhood</p>
+              <div className="sequence-bar h-1 w-48 md:w-64 mx-auto mt-4 md:mt-6 rounded-full"></div>
+            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
               {pathways.map(pathway => (
-                <PathwayCard 
+                <TarotCard 
                   key={pathway.id} 
-                  pathway={pathway}
-                  isSelected={selected === pathway.id}
+                  pathway={pathway} 
                   onClick={() => onSelect(pathway.id)}
                 />
               ))}
             </div>
+          </div>
+        </section>
+      );
+    }
 
-            {selected && (
-              <PathwayDetails 
-                pathway={pathways.find(p => p.id === selected)}
-                onClose={() => onSelect(null)}
+    function TarotCard({ pathway, onClick }) {
+      const [imageError, setImageError] = useState(false);
+
+      return (
+        <div onClick={onClick} className="tarot-card rounded-lg p-4 md:p-6 cursor-pointer group no-select">
+          {/* Card Number */}
+          <div className="text-center mb-3 md:mb-4">
+            <span className="ancient-font text-gold text-base md:text-xl">{pathway.number}</span>
+          </div>
+
+          {/* Pathway Image or Fallback Symbol */}
+          <div className="mb-3 md:mb-4 h-24 md:h-32 flex items-center justify-center">
+            {!imageError ? (
+              <img 
+                src={pathway.image} 
+                alt={pathway.name}
+                className="pathway-image max-h-full"
+                onError={() => setImageError(true)}
               />
+            ) : (
+              <div className="text-5xl md:text-6xl text-gold opacity-50">
+                {pathway.symbol}
+              </div>
             )}
           </div>
-        </section>
-      );
-    }
 
-    function PathwayCard({ pathway, isSelected, onClick }) {
-      const IconComponent = PathwayIcons[pathway.id] || PathwayIcons.fool;
-
-      return (
-        <div 
-          onClick={onClick}
-          className={`pathway-card rounded-lg p-6 cursor-pointer ${isSelected ? 'ring-4 ring-gold' : ''}`}
-        >
-          <div className="relative z-10">
-            <div className="w-20 h-20 mx-auto mb-4">
-              <IconComponent />
-            </div>
-            
-            <h3 className="title-font text-center text-gold text-lg mb-2">
-              {pathway.name}
-            </h3>
-            
-            <p className="text-center text-xs text-gray-500 italic">
-              {pathway.group}
-            </p>
-
-            <div className={`mt-4 h-1 rounded-full bg-gradient-to-r ${pathway.color}`}></div>
+          {/* Mystical Symbol */}
+          <div className="text-center text-2xl md:text-4xl text-gold opacity-50 mb-3 md:mb-4">
+            {pathway.symbol}
           </div>
-        </div>
-      );
-    }
 
-    function PathwayDetails({ pathway, onClose }) {
-      return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-80" onClick={onClose}>
-          <div 
-            className="tarot-border mystical-glow bg-gradient-to-b from-gray-900 to-black rounded-lg p-8 max-w-2xl w-full relative"
-            onClick={e => e.stopPropagation()}
-          >
-            <button 
-              onClick={onClose}
-              className="absolute top-4 right-4 text-gold hover:text-yellow-500 text-2xl"
-            >
-              ✕
-            </button>
-
-            <div className="text-center">
-              <div className="w-32 h-32 mx-auto mb-6">
-                {PathwayIcons[pathway.id] ? PathwayIcons[pathway.id]() : <div className="text-6xl">{pathway.emoji}</div>}
-              </div>
-
-              <h2 className="title-font text-4xl text-gold mb-2 ancient-text">
-                {pathway.name} Pathway
-              </h2>
-
-              <p className="text-gray-400 mb-6 italic">Divine Group: {pathway.group}</p>
-
-              <div className={`h-2 rounded-full bg-gradient-to-r ${pathway.color} mb-8`}></div>
-
-              <div className="text-left space-y-4 text-gray-300">
-                <p className="italic">
-                  "The {pathway.name} pathway represents one of the twenty-two beyonder sequences, 
-                  each step bringing you closer to divinity—or madness."
-                </p>
-
-                <div className="border-l-4 border-gold pl-4 bg-gold bg-opacity-5 p-4 rounded">
-                  <p className="font-bold text-gold mb-2">Sequence Progression:</p>
-                  <p className="text-sm">
-                    Start at Sequence 9 and advance through spiritual accumulation, 
-                    rituals, and server participation. Each advancement increases your power 
-                    but also your risk of losing control...
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    function CTASection() {
-      return (
-        <section id="connect" className="relative z-10 py-20 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="tarot-border mystical-glow bg-gradient-to-b from-gray-900 to-black rounded-lg p-12">
-              <h2 className="title-font text-4xl text-gold mb-6 ancient-text">
-                Begin Your Mystical Journey
-              </h2>
-
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                Connect your Discord account to synchronize your beyonder progression. 
-                The Gray Fog awaits, and the pathways call to those brave enough to answer...
-              </p>
-
-              <a 
-                href="/linked-role"
-                className="inline-block px-12 py-4 bg-gradient-to-r from-gold via-yellow-600 to-gold text-black font-bold text-xl rounded-lg hover:scale-110 transition-all duration-300 shadow-2xl mystical-glow title-font"
-              >
-                🔮 Connect to Aroodes
-              </a>
-
-              <p className="mt-8 text-sm text-gray-500 italic">
-                "In the depths of the mysterious fog, greatness awaits..."
-              </p>
-            </div>
-          </div>
-        </section>
-      );
-    }
-
-    function Footer() {
-      return (
-        <footer className="relative z-10 py-12 px-4 text-center border-t border-gold border-opacity-20">
-          <p className="text-gray-500 text-sm">
-            🌙 Aroodes - The Mystical Mirror of Lord of the Mysteries
-          </p>
-          <p className="text-gray-600 text-xs mt-2 italic">
-            Above the Gray Fog, the Fool watches eternally...
-          </p>
-        </footer>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-  </script>
-
-</body>
-</html>
+          {/* Card N
