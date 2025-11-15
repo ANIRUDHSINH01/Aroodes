@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -324,3 +323,237 @@
       );
     }
     
+    function Beyonders({ beyonders, onSelectUser, searchTerm, setSearchTerm }) {
+      const [filter, setFilter] = useState('all');
+      const [sortBy, setSortBy] = useState('sequence');
+
+      const filtered = beyonders
+        .filter(b => {
+          if (filter === 'angels') return b.sequence <= 3 && b.sequence > 0;
+          if (filter === 'gods') return b.sequence === 0;
+          if (searchTerm) return b.username.toLowerCase().includes(searchTerm.toLowerCase());
+          return true;
+        })
+        .sort((a, b) => {
+          if (sortBy === 'sequence') return a.sequence - b.sequence;
+          if (sortBy === 'points') return (b.spiritual_points || 0) - (a.spiritual_points || 0);
+          if (sortBy === 'name') return a.username.localeCompare(b.username);
+          return 0;
+        });
+
+      return (
+        <div className="space-y-8">
+          <h2 className="text-3xl md:text-4xl title-font text-primary text-center">👥 All Beyonders ({beyonders.length})</h2>
+
+          {/* Search & Filters */}
+          <div className="glass rounded-xl p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <input
+                type="text"
+                placeholder="🔍 Search beyonders..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="px-4 py-3 rounded-lg bg-black/30 border border-primary/30 focus:border-primary outline-none"
+              />
+              <select value={filter} onChange={(e) => setFilter(e.target.value)} className="px-4 py-3 rounded-lg bg-black/30 border border-primary/30 focus:border-primary outline-none">
+                <option value="all">All Beyonders</option>
+                <option value="angels">👼 Angels Only</option>
+                <option value="gods">⚜️ True Gods</option>
+              </select>
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-4 py-3 rounded-lg bg-black/30 border border-primary/30 focus:border-primary outline-none">
+                <option value="sequence">Sort by Sequence</option>
+                <option value="points">Sort by Points</option>
+                <option value="name">Sort by Name</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Beyonders Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map(b => (
+              <BeyonderCard key={b.user_id} beyonder={b} onClick={() => onSelectUser(b)} />
+            ))}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-12 text-gray-400 text-lg">No beyonders found.</div>
+          )}
+        </div>
+      );
+    }
+
+    function BeyonderCard({ beyonder, onClick }) {
+      return (
+        <div onClick={onClick} className="glass rounded-xl p-6 hover:scale-105 transition glow-hover cursor-pointer">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="text-lg font-bold truncate">{beyonder.username}</h3>
+            {beyonder.sequence === 0 && <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold float">⚜️ God</span>}
+            {beyonder.sequence <= 3 && beyonder.sequence > 0 && <span className="bg-yellow-500 text-dark px-3 py-1 rounded-full text-xs font-bold float">👼 Angel</span>}
+          </div>
+          
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-400">Pathway:</span>
+              <span className="text-primary capitalize font-semibold">{beyonder.pathway}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Sequence:</span>
+              <span className="text-primary font-semibold">{beyonder.sequence}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Points:</span>
+              <span className="text-primary font-semibold">{beyonder.spiritual_points || 0}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Lost Control:</span>
+              <span className="text-red-400 font-semibold">{beyonder.lose_control_count || 0}x</span>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-gray-600 flex justify-around text-xs">
+            <div className="text-center">
+              <div className="text-2xl">💬</div>
+              <div className="text-gray-400">{beyonder.total_messages || 0}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl">🕯️</div>
+              <div className="text-gray-400">{beyonder.rituals_completed || 0}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl">⏰</div>
+              <div className="text-gray-400">{beyonder.total_voice_minutes || 0}m</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function UserProfileModal({ user, onClose }) {
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90" onClick={onClose}>
+          <div className="glass rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <button onClick={onClose} className="float-right text-3xl text-primary hover:text-yellow-500">✕</button>
+
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">👤</div>
+              <h2 className="text-3xl title-font text-primary mb-2">{user.username}</h2>
+              <div className="text-sm text-gray-400">User ID: {user.user_id}</div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="glass p-4 rounded">
+                <h3 className="title-font text-primary mb-3">Pathway Information</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Pathway:</span>
+                    <span className="text-primary capitalize font-bold">{user.pathway}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Current Sequence:</span>
+                    <span className="text-primary font-bold">{user.sequence}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Spiritual Points:</span>
+                    <span className="text-primary font-bold">{user.spiritual_points || 0}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass p-4 rounded">
+                <h3 className="title-font text-primary mb-3">Activity Stats</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-gray-400">Messages</div>
+                    <div className="text-2xl text-primary font-bold">{user.total_messages || 0}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Rituals</div>
+                    <div className="text-2xl text-primary font-bold">{user.rituals_completed || 0}</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Voice Time</div>
+                    <div className="text-2xl text-primary font-bold">{user.total_voice_minutes || 0}m</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-400">Lost Control</div>
+                    <div className="text-2xl text-red-400 font-bold">{user.lose_control_count || 0}x</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass p-4 rounded">
+                <h3 className="title-font text-primary mb-3">Timeline</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Joined as Beyonder:</span>
+                    <span className="text-gray-400">
+                      {user.assigned_at ? new Date(user.assigned_at).toLocaleDateString() : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Days Active:</span>
+                    <span className="text-gray-400">
+                      {user.assigned_at ? Math.floor((Date.now() - new Date(user.assigned_at)) / (1000 * 60 * 60 * 24)) : 0} days
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function Leaderboard({ leaderboard }) {
+      const getMedal = (index) => {
+        if (index === 0) return '🥇';
+        if (index === 1) return '🥈';
+        if (index === 2) return '🥉';
+        return `${index + 1}`;
+      };
+
+      return (
+        <div className="space-y-8">
+          <h2 className="text-3xl md:text-4xl title-font text-primary text-center">🏆 Top Beyonders</h2>
+
+          <div className="glass rounded-xl overflow-hidden">
+            <div className="bg-primary/20 px-6 py-4 border-b border-primary">
+              <div className="grid grid-cols-12 gap-4 font-bold">
+                <div className="col-span-1">Rank</div>
+                <div className="col-span-4 md:col-span-5">Name</div>
+                <div className="col-span-3 md:col-span-3">Pathway</div>
+                <div className="col-span-2 md:col-span-2">Sequence</div>
+                <div className="col-span-2 md:col-span-2">Points</div>
+              </div>
+            </div>
+            
+            <div className="divide-y divide-gray-700">
+              {leaderboard.map((user, index) => (
+                <div key={user.user_id} className="px-6 py-4 hover:bg-primary/10 transition">
+                  <div className="grid grid-cols-12 gap-4 items-center">
+                    <div className="col-span-1 text-2xl">{getMedal(index)}</div>
+                    <div className="col-span-4 md:col-span-5 font-semibold truncate">{user.username}</div>
+                    <div className="col-span-3 md:col-span-3 capitalize text-primary truncate">{user.pathway}</div>
+                    <div className="col-span-2 md:col-span-2">
+                      {user.sequence === 0 ? '⚜️ 0' : user.sequence <= 3 ? `👼 ${user.sequence}` : `🔮 ${user.sequence}`}
+                    </div>
+                    <div className="col-span-2 md:col-span-2 text-primary font-bold">{user.spiritual_points || 0}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {leaderboard.length === 0 && (
+            <div className="text-center py-12 text-gray-400 text-lg">No beyonders to display yet.</div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+
+</body>
+</html>
