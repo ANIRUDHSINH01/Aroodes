@@ -5,7 +5,10 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/aroodes';
 
-// Enhanced User Schema with all fields
+// ============================================
+// USER SCHEMA
+// ============================================
+
 const userSchema = new mongoose.Schema({
   user_id: { 
     type: String, 
@@ -133,7 +136,7 @@ const userSchema = new mongoose.Schema({
   timestamps: true 
 });
 
-// Indexes for better query performance
+// Indexes
 userSchema.index({ pathway: 1, sequence: 1 });
 userSchema.index({ spiritual_points: -1 });
 userSchema.index({ last_active: -1 });
@@ -144,7 +147,7 @@ userSchema.virtual('days_active').get(function() {
   return Math.floor((Date.now() - this.assigned_at) / (1000 * 60 * 60 * 24));
 });
 
-// Method to calculate rank based on sequence
+// Method to calculate rank
 userSchema.methods.calculateRank = function() {
   if (!this.pathway) return 'initiate';
   if (this.sequence === 0) return 'true_god';
@@ -162,7 +165,7 @@ userSchema.methods.updateRank = async function() {
 const User = mongoose.model('User', userSchema);
 
 // ============================================
-// DATABASE CONNECTION
+// CONNECTION
 // ============================================
 
 export async function connectDB() {
@@ -172,21 +175,18 @@ export async function connectDB() {
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000,
     });
-    console.log('✅ MongoDB connected successfully');
+    console.log('✅ MongoDB connected');
     console.log(`   Database: ${mongoose.connection.db.databaseName}`);
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
+    console.error('❌ MongoDB error:', error);
     throw error;
   }
 }
 
 // ============================================
-// USER OPERATIONS
+// BASIC USER OPERATIONS
 // ============================================
 
-/**
- * Get user by ID
- */
 export async function getUser(userId) {
   try {
     return await User.findOne({ user_id: userId });
@@ -196,15 +196,11 @@ export async function getUser(userId) {
   }
 }
 
-/**
- * Create or update user with pathway
- */
 export async function setUserPathway(userId, username, pathway, discriminator = '0', avatar = null) {
   try {
     const existingUser = await User.findOne({ user_id: userId });
     
     if (existingUser) {
-      // Update existing user
       existingUser.pathway = pathway;
       existingUser.sequence = 9;
       existingUser.username = username;
@@ -215,7 +211,6 @@ export async function setUserPathway(userId, username, pathway, discriminator = 
       await existingUser.updateRank();
       return await existingUser.save();
     } else {
-      // Create new user
       const newUser = new User({
         user_id: userId,
         username: username,
@@ -236,9 +231,6 @@ export async function setUserPathway(userId, username, pathway, discriminator = 
   }
 }
 
-/**
- * Update user stats
- */
 export async function updateUserStats(userId, updates) {
   try {
     const user = await User.findOneAndUpdate(
@@ -263,9 +255,6 @@ export async function updateUserStats(userId, updates) {
   }
 }
 
-/**
- * Increment specific stat
- */
 export async function incrementStats(userId, field, amount = 1) {
   try {
     return await User.findOneAndUpdate(
@@ -282,9 +271,10 @@ export async function incrementStats(userId, field, amount = 1) {
   }
 }
 
-/**
- * Advance user sequence
- */
+// ============================================
+// ADVANCEMENT & PROGRESSION
+// ============================================
+
 export async function advanceSequence(userId) {
   try {
     const user = await User.findOne({ user_id: userId });
@@ -295,7 +285,7 @@ export async function advanceSequence(userId) {
     
     user.sequence -= 1;
     user.total_advancements += 1;
-    user.lose_control_risk += 5; // Increase risk with each advancement
+    user.lose_control_risk += 5;
     await user.updateRank();
     await user.save();
     
@@ -306,9 +296,6 @@ export async function advanceSequence(userId) {
   }
 }
 
-/**
- * Update metadata sync timestamp
- */
 export async function updateUserMetadata(userId) {
   try {
     return await User.findOneAndUpdate(
@@ -327,9 +314,10 @@ export async function updateUserMetadata(userId) {
   }
 }
 
-/**
- * Add achievement to user
- */
+// ============================================
+// ACHIEVEMENTS & INVENTORY
+// ============================================
+
 export async function addAchievement(userId, achievementName) {
   try {
     return await User.findOneAndUpdate(
@@ -351,9 +339,6 @@ export async function addAchievement(userId, achievementName) {
   }
 }
 
-/**
- * Add item to inventory
- */
 export async function addInventoryItem(userId, itemName, itemType, quantity = 1) {
   try {
     const user = await User.findOne({ user_id: userId });
@@ -384,9 +369,6 @@ export async function addInventoryItem(userId, itemName, itemType, quantity = 1)
 // QUERY OPERATIONS
 // ============================================
 
-/**
- * Get all users
- */
 export async function getAllUsers() {
   try {
     return await User.find({}).sort({ last_active: -1 });
@@ -396,9 +378,6 @@ export async function getAllUsers() {
   }
 }
 
-/**
- * Get users by pathway
- */
 export async function getUsersByPathway(pathway) {
   try {
     return await User.find({ pathway: pathway }).sort({ sequence: 1 });
@@ -408,9 +387,6 @@ export async function getUsersByPathway(pathway) {
   }
 }
 
-/**
- * Get leaderboard
- */
 export async function getLeaderboard(sortBy = 'sequence', limit = 50) {
   try {
     let sortField = {};
@@ -432,9 +408,6 @@ export async function getLeaderboard(sortBy = 'sequence', limit = 50) {
   }
 }
 
-/**
- * Get server statistics
- */
 export async function getServerStats() {
   try {
     const allUsers = await User.find({ pathway: { $ne: null } });
@@ -523,9 +496,6 @@ export async function getServerStats() {
   }
 }
 
-/**
- * Get top performers
- */
 export async function getTopPerformers(category = 'points', limit = 10) {
   try {
     let sortField = {};
@@ -556,9 +526,6 @@ export async function getTopPerformers(category = 'points', limit = 10) {
   }
 }
 
-/**
- * Search users
- */
 export async function searchUsers(query) {
   try {
     return await User.find({
@@ -574,12 +541,76 @@ export async function searchUsers(query) {
 }
 
 // ============================================
-// CLEANUP & MAINTENANCE
+// ADMIN OPERATIONS
 // ============================================
 
-/**
- * Remove inactive users (optional)
- */
+export async function deleteUser(userId) {
+  try {
+    const result = await User.deleteOne({ user_id: userId });
+    return result.deletedCount > 0;
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return false;
+  }
+}
+
+export async function resetUserPathway(userId) {
+  try {
+    return await User.findOneAndUpdate(
+      { user_id: userId },
+      {
+        $set: {
+          pathway: null,
+          sequence: 9,
+          spiritual_points: 0,
+          total_advancements: 0,
+          beyonder_rank: 'initiate',
+          lose_control_risk: 5,
+          pathway_affinity: 50,
+          rituals_completed: 0,
+          achievements: [],
+          inventory: []
+        }
+      },
+      { new: true }
+    );
+  } catch (error) {
+    console.error('Error resetting pathway:', error);
+    return null;
+  }
+}
+
+export async function forceSetSequence(userId, sequence) {
+  try {
+    const user = await User.findOne({ user_id: userId });
+    if (!user) return null;
+    
+    user.sequence = Math.max(0, Math.min(9, sequence));
+    await user.updateRank();
+    user.last_active = new Date();
+    return await user.save();
+  } catch (error) {
+    console.error('Error setting sequence:', error);
+    return null;
+  }
+}
+
+export async function givePoints(userId, points) {
+  try {
+    return await User.findOneAndUpdate(
+      { user_id: userId },
+      {
+        $inc: { spiritual_points: points },
+        $set: { last_active: new Date() }
+      },
+      { new: true }
+    );
+  } catch (error) {
+    console.error('Error giving points:', error);
+    return null;
+  }
+}
+
 export async function cleanupInactiveUsers(daysInactive = 90) {
   try {
     const cutoffDate = new Date(Date.now() - daysInactive * 24 * 60 * 60 * 1000);
@@ -614,5 +645,9 @@ export default {
   getServerStats,
   getTopPerformers,
   searchUsers,
+  deleteUser,
+  resetUserPathway,
+  forceSetSequence,
+  givePoints,
   cleanupInactiveUsers
 };
