@@ -1,62 +1,81 @@
-import axios from 'axios';
+import fetch from 'node-fetch';
+import dotenv from 'dotenv';
 
-const METADATA_TYPES = {
-  INTEGER_GREATER_THAN_OR_EQUAL: 3,
-  BOOLEAN_EQUAL: 7
-};
+dotenv.config();
 
-const metadata = [
-  {
-    key: 'sequence',
-    name: 'Sequence Level',
-    description: 'Your pathway sequence (0-9, lower is stronger)',
-    type: METADATA_TYPES.INTEGER_GREATER_THAN_OR_EQUAL
-  },
-  {
-    key: 'beyonder_days',
-    name: 'Days as Beyonder',
-    description: 'Days since becoming a Beyonder',
-    type: METADATA_TYPES.INTEGER_GREATER_THAN_OR_EQUAL
-  },
-  {
-    key: 'is_angel',
-    name: 'Angel Status',
-    description: 'Reached Angel level (Sequence 1-3)',
-    type: METADATA_TYPES.BOOLEAN_EQUAL
-  },
-  {
-    key: 'lost_control',
-    name: 'Lost Control Count',
-    description: 'Times lost control',
-    type: METADATA_TYPES.INTEGER_GREATER_THAN_OR_EQUAL
-  },
-  {
-    key: 'has_pathway',
-    name: 'Has Pathway',
-    description: 'Assigned to a pathway',
-    type: METADATA_TYPES.BOOLEAN_EQUAL
-  }
-];
+const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+const DISCORD_API = 'https://discord.com/api/v10';
 
+/**
+ * Register linked role metadata
+ */
 export async function registerMetadata() {
   try {
-    const response = await axios.put(
-      `https://discord.com/api/v10/applications/${process.env.DISCORD_CLIENT_ID}/role-connections/metadata`,
-      metadata,
+    // Get bot token
+    const tokenResponse = await fetch(`${DISCORD_API}/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        scope: 'role_connections.write'
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error('Failed to get access token');
+    }
+
+    const { access_token } = await tokenResponse.json();
+
+    // Define metadata
+    const metadata = [
       {
-        headers: {
-          'Authorization': `Bot ${process.env.DISCORD_TOKEN}`,
-          'Content-Type': 'application/json'
-        }
+        key: 'pathway',
+        name: 'Beyonder Pathway',
+        description: 'The chosen mystical pathway',
+        type: 2 // STRING
+      },
+      {
+        key: 'sequence',
+        name: 'Sequence Level',
+        description: 'Current sequence (9 = lowest, 0 = True God)',
+        type: 3 // INTEGER
+      },
+      {
+        key: 'beyonder_level',
+        name: 'Beyonder Level',
+        description: 'Classification: beyonder or angel',
+        type: 2 // STRING
       }
-    );
-    
-    console.log('✅ Linked roles metadata registered');
-    return response.data;
+    ];
+
+    // Register metadata
+    const response = await fetch(`${DISCORD_API}/applications/${CLIENT_ID}/role-connections/metadata`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${access_token}`
+      },
+      body: JSON.stringify(metadata)
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to register metadata: ${error}`);
+    }
+
+    console.log('✅ Linked Role metadata registered successfully');
+    return await response.json();
+
   } catch (error) {
-    console.error('❌ Error registering metadata:', error.response?.data || error.message);
+    console.error('❌ Failed to register metadata:', error.message);
     throw error;
   }
 }
 
-export { metadata };
+export default { registerMetadata };
