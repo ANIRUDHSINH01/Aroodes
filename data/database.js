@@ -625,29 +625,212 @@ export async function cleanupInactiveUsers(daysInactive = 90) {
   }
 }
 
+
+// ============================================
+// HISTORY & TRACKING
+// ============================================
+
+/**
+ * Get user advancement history
+ */
+export async function getAdvancementHistory(userId) {
+  try {
+    const user = await User.findOne({ user_id: userId });
+    
+    if (!user) return [];
+    
+    // Since we don't have a separate history collection,
+    // we'll return basic info from the user document
+    return {
+      userId: user.user_id,
+      username: user.username,
+      pathway: user.pathway,
+      currentSequence: user.sequence,
+      totalAdvancements: user.total_advancements,
+      beyonderRank: user.beyonder_rank,
+      assignedAt: user.assigned_at,
+      lastActive: user.last_active,
+      achievements: user.achievements,
+      spiritualPoints: user.spiritual_points
+    };
+  } catch (error) {
+    console.error('Error getting advancement history:', error);
+    return [];
+  }
+}
+
+/**
+ * Get user's full profile
+ */
+export async function getUserProfile(userId) {
+  try {
+    const user = await User.findOne({ user_id: userId });
+    if (!user) return null;
+    
+    return {
+      ...user.toObject(),
+      days_active: user.days_active
+    };
+  } catch (error) {
+    console.error('Error getting user profile:', error);
+    return null;
+  }
+}
+
+/**
+ * Get recent activity (last N users who were active)
+ */
+export async function getRecentActivity(limit = 20) {
+  try {
+    return await User.find({ pathway: { $ne: null } })
+      .sort({ last_active: -1 })
+      .limit(limit)
+      .select('user_id username pathway sequence last_active');
+  } catch (error) {
+    console.error('Error getting recent activity:', error);
+    return [];
+  }
+}
+
+/**
+ * Get users who advanced recently
+ */
+export async function getRecentAdvancements(limit = 10) {
+  try {
+    return await User.find({ 
+      pathway: { $ne: null },
+      total_advancements: { $gt: 0 }
+    })
+      .sort({ last_active: -1 })
+      .limit(limit)
+      .select('user_id username pathway sequence total_advancements last_active');
+  } catch (error) {
+    console.error('Error getting recent advancements:', error);
+    return [];
+  }
+}
+
+/**
+ * Bulk update users (admin)
+ */
+export async function bulkUpdateUsers(userIds, updates) {
+  try {
+    const result = await User.updateMany(
+      { user_id: { $in: userIds } },
+      { $set: { ...updates, last_active: new Date() } }
+    );
+    return result.modifiedCount;
+  } catch (error) {
+    console.error('Error bulk updating users:', error);
+    return 0;
+  }
+}
+
+/**
+ * Get pathway statistics
+ */
+export async function getPathwayStats(pathway) {
+  try {
+    const users = await User.find({ pathway: pathway });
+    
+    const totalUsers = users.length;
+    const avgSequence = users.reduce((sum, u) => sum + u.sequence, 0) / totalUsers || 9;
+    const totalPoints = users.reduce((sum, u) => sum + (u.spiritual_points || 0), 0);
+    
+    const sequenceCount = {};
+    users.forEach(u => {
+      sequenceCount[u.sequence] = (sequenceCount[u.sequence] || 0) + 1;
+    });
+    
+    return {
+      pathway,
+      totalUsers,
+      averageSequence: Number(avgSequence.toFixed(2)),
+      totalPoints,
+      sequenceDistribution: Object.entries(sequenceCount).map(([seq, count]) => ({
+        sequence: parseInt(seq),
+        count
+      }))
+    };
+  } catch (error) {
+    console.error('Error getting pathway stats:', error);
+    return null;
+  }
+}
+
+/**
+ * Check if user exists
+ */
+export async function userExists(userId) {
+  try {
+    const count = await User.countDocuments({ user_id: userId });
+    return count > 0;
+  } catch (error) {
+    console.error('Error checking user existence:', error);
+    return false;
+  }
+}
+
+/**
+ * Get multiple users by IDs
+ */
+export async function getUsersByIds(userIds) {
+  try {
+    return await User.find({ user_id: { $in: userIds } });
+  } catch (error) {
+    console.error('Error getting users by IDs:', error);
+    return [];
+  }
+}
+
+
+
 // ============================================
 // EXPORTS
 // ============================================
 
-export default {
+export {
+  // Connection
   connectDB,
+  
+  // Basic Operations
   getUser,
   setUserPathway,
   updateUserStats,
   incrementStats,
+  
+  // Progression
   advanceSequence,
   updateUserMetadata,
+  
+  // Features
   addAchievement,
   addInventoryItem,
+  
+  // Queries
   getAllUsers,
   getUsersByPathway,
+  getUsersByIds,
   getLeaderboard,
   getServerStats,
   getTopPerformers,
   searchUsers,
+  
+  // History & Tracking
+  getAdvancementHistory,
+  getUserProfile,
+  getRecentActivity,
+  getRecentAdvancements,
+  getPathwayStats,
+  
+  // Admin
   deleteUser,
   resetUserPathway,
   forceSetSequence,
   givePoints,
-  cleanupInactiveUsers
+  bulkUpdateUsers,
+  cleanupInactiveUsers,
+  
+  // Utilities
+  userExists
 };
