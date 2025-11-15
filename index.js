@@ -6,6 +6,7 @@ import { readFileSync } from 'fs';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import jwt from 'jsonwebtoken';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { registerMetadata } from './config/metadata.js';
 import { router } from './routes/oauth.js';
@@ -47,10 +48,10 @@ for (const file of commandFiles) {
 
 console.log(`\n✅ Loaded ${client.commands.size} commands\n`);
 
-// Express server for OAuth
+// Express server
 const app = express();
 
-// IMPORTANT: Static file serving
+// Static file serving - IMPORTANT for images
 app.use(express.static('public'));
 app.use('/pathways', express.static(path.join(__dirname, 'public', 'pathways')));
 
@@ -58,25 +59,29 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(express.json());
 app.use('/', router);
 
+// Root route - redirect based on auth
 app.get('/', (req, res) => {
+  const token = req.cookies.auth_token;
+  
+  if (token) {
+    try {
+      jwt.verify(token, process.env.JWT_SECRET || 'change-this');
+      return res.redirect('/dashboard');
+    } catch (error) {
+      // Invalid token
+    }
+  }
+  
+  // Show main page
   try {
     const html = readFileSync('./public/index.html', 'utf-8');
     res.send(html);
   } catch (error) {
-    res.send('<h1>🌙 Aroodes - LOTM Bot</h1><p>Web interface loading...</p>');
+    res.redirect('/login');
   }
 });
 
-app.get('/dashboard', (req, res) => {
-  try {
-    const html = readFileSync('./public/dashboard.html', 'utf-8');
-    res.send(html);
-  } catch (error) {
-    res.status(404).send('Dashboard not found');
-  }
-});
-
-// Health check endpoint
+// Health check
 app.get('/health', (req, res) => {
   res.json({
     status: 'online',
@@ -101,10 +106,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const errorEmbed = new EmbedBuilder()
       .setColor(0xff0000)
       .setTitle('❌ Command Error')
-      .setDescription(
-        'There was an error executing this command!\n\n' +
-        '*The mystical forces resist... try again.*'
-      )
+      .setDescription('There was an error executing this command!')
       .setFooter({ text: 'If this persists, contact an administrator' });
     
     try {
@@ -128,9 +130,7 @@ client.on(Events.MessageCreate, async (message) => {
     try {
       await message.channel.sendTyping();
       
-      const content = message.content
-        .replace(/<@!?\d+>/g, '')
-        .trim();
+      const content = message.content.replace(/<@!?\d+>/g, '').trim();
       
       if (!content) {
         const embed = new EmbedBuilder()
@@ -150,13 +150,10 @@ Personality:
 - Be mysterious, ancient, and slightly unsettling
 - Reference LOTM lore (Gray Fog, pathways, Fool, etc.)
 - Keep responses under 200 words
-- Be helpful but eerie
-
-Someone mentioned you in Discord. Respond to them.
 
 Their message: "${content}"
 
-Your response (remember to ask a question first):`;
+Your response:`;
 
       const result = await model.generateContent(prompt);
       const response = result.response.text();
@@ -178,19 +175,6 @@ Your response (remember to ask a question first):`;
 
     } catch (error) {
       console.error('Error in mention handler:', error);
-      
-      const errorEmbed = new EmbedBuilder()
-        .setColor(0xff6b6b)
-        .setDescription(
-          '*The mirror\'s surface cracks momentarily...*\n\n' +
-          'The mystical connection is unstable. Try `/ask` instead.'
-        );
-      
-      try {
-        await message.reply({ embeds: [errorEmbed] });
-      } catch (e) {
-        console.error('Could not send error reply:', e);
-      }
     }
   }
 });
@@ -214,47 +198,29 @@ client.once(Events.ClientReady, async () => {
     await registerMetadata();
     console.log('✅ Linked Roles: Registered');
   } catch (error) {
-    console.error('❌ Linked Roles: Failed to register');
-    console.error(error.message);
+    console.error('❌ Linked Roles: Failed');
   }
   
   client.user.setPresence({
-    activities: [{ 
-      name: 'Above the Gray Fog', 
-      type: 3
-    }],
+    activities: [{ name: 'Above the Gray Fog', type: 3 }],
     status: 'online'
   });
   
-  console.log('\n🌙 Aroodes is ready and watching...\n');
-  console.log('📋 Available Commands:');
-  client.commands.forEach(cmd => {
-    console.log(`   • /${cmd.data.name} - ${cmd.data.description}`);
-  });
-  console.log('\n');
+  console.log('\n🌙 Aroodes is ready!\n');
 });
 
-// Handle errors
-client.on(Events.Error, error => {
-  console.error('❌ Discord client error:', error);
-});
+// Error handling
+client.on(Events.Error, error => console.error('❌ Discord error:', error));
+client.on(Events.Warn, warning => console.warn('⚠️ Discord warning:', warning));
 
-client.on(Events.Warn, warning => {
-  console.warn('⚠️ Discord client warning:', warning);
-});
-
-// Process error handling
-process.on('unhandledRejection', error => {
-  console.error('❌ Unhandled promise rejection:', error);
-});
-
+process.on('unhandledRejection', error => console.error('❌ Unhandled rejection:', error));
 process.on('uncaughtException', error => {
   console.error('❌ Uncaught exception:', error);
   process.exit(1);
 });
 
 process.on('SIGINT', async () => {
-  console.log('\n🌙 Aroodes is shutting down...');
+  console.log('\n🌙 Shutting down...');
   client.destroy();
   process.exit(0);
 });
@@ -273,11 +239,13 @@ process.on('SIGINT', async () => {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
       console.log(`🌐 Web server: http://localhost:${PORT}`);
+      console.log(`🔐 Login: http://localhost:${PORT}/login`);
+      console.log(`📊 Dashboard: http://localhost:${PORT}/dashboard`);
       console.log(`🖼️  Images: http://localhost:${PORT}/pathways/`);
     });
     
   } catch (error) {
-    console.error('❌ Failed to start bot:', error);
+    console.error('❌ Failed to start:', error);
     process.exit(1);
   }
 })();
