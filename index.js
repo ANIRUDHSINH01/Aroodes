@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import { readFileSync } from 'fs';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { registerMetadata } from './config/metadata.js';
 import { router } from './routes/oauth.js';
@@ -11,6 +13,9 @@ import { PATHWAYS } from './data/pathways.js';
 import { connectDB } from './data/database.js';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -44,6 +49,11 @@ console.log(`\n✅ Loaded ${client.commands.size} commands\n`);
 
 // Express server for OAuth
 const app = express();
+
+// IMPORTANT: Static file serving
+app.use(express.static('public'));
+app.use('/pathways', express.static(path.join(__dirname, 'public', 'pathways')));
+
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(express.json());
 app.use('/', router);
@@ -54,6 +64,15 @@ app.get('/', (req, res) => {
     res.send(html);
   } catch (error) {
     res.send('<h1>🌙 Aroodes - LOTM Bot</h1><p>Web interface loading...</p>');
+  }
+});
+
+app.get('/dashboard', (req, res) => {
+  try {
+    const html = readFileSync('./public/dashboard.html', 'utf-8');
+    res.send(html);
+  } catch (error) {
+    res.status(404).send('Dashboard not found');
   }
 });
 
@@ -102,16 +121,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 // Handle @mentions for AI chat
 client.on(Events.MessageCreate, async (message) => {
-  // Ignore bots and DMs
   if (message.author.bot) return;
   if (!message.guild) return;
   
-  // Check if bot is mentioned
   if (message.mentions.has(client.user)) {
     try {
       await message.channel.sendTyping();
       
-      // Extract message without mention
       const content = message.content
         .replace(/<@!?\d+>/g, '')
         .trim();
@@ -125,8 +141,7 @@ client.on(Events.MessageCreate, async (message) => {
         return message.reply({ embeds: [embed] });
       }
 
-      // Generate AI response
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
       
       const prompt = `You are Aroodes (Arrodes), the sentient magic mirror from Lord of the Mysteries.
 
@@ -146,7 +161,6 @@ Your response (remember to ask a question first):`;
       const result = await model.generateContent(prompt);
       const response = result.response.text();
 
-      // Reply with embed
       const embed = new EmbedBuilder()
         .setColor(0xd4af37)
         .setAuthor({ 
@@ -204,11 +218,10 @@ client.once(Events.ClientReady, async () => {
     console.error(error.message);
   }
   
-  // Set bot presence
   client.user.setPresence({
     activities: [{ 
       name: 'Above the Gray Fog', 
-      type: 3 // Watching
+      type: 3
     }],
     status: 'online'
   });
@@ -228,15 +241,6 @@ client.on(Events.Error, error => {
 
 client.on(Events.Warn, warning => {
   console.warn('⚠️ Discord client warning:', warning);
-});
-
-// Handle guild events
-client.on(Events.GuildCreate, guild => {
-  console.log(`✅ Joined new guild: ${guild.name} (${guild.id})`);
-});
-
-client.on(Events.GuildDelete, guild => {
-  console.log(`❌ Left guild: ${guild.name} (${guild.id})`);
 });
 
 // Process error handling
@@ -260,18 +264,16 @@ process.on('SIGINT', async () => {
   try {
     console.log('🔄 Starting Aroodes...\n');
     
-    // Connect to MongoDB first
     console.log('📦 Connecting to MongoDB...');
     await connectDB();
     
-    // Then start Discord bot
     console.log('🤖 Logging in to Discord...');
     await client.login(process.env.DISCORD_TOKEN);
     
-    // Finally start Express server
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
-      console.log(`🌐 OAuth server: http://localhost:${PORT}`);
+      console.log(`🌐 Web server: http://localhost:${PORT}`);
+      console.log(`🖼️  Images: http://localhost:${PORT}/pathways/`);
     });
     
   } catch (error) {
@@ -280,5 +282,4 @@ process.on('SIGINT', async () => {
   }
 })();
 
-// Export client for potential use in other modules
 export default client;
