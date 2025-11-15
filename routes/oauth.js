@@ -10,6 +10,7 @@ const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 const REDIRECT_URI = process.env.DISCORD_REDIRECT_URI;
 const JWT_SECRET = process.env.JWT_SECRET || 'change-this-secret';
+const COOKIE_SECRET = process.env.COOKIE_SECRET || 'change-this-cookie-secret';
 
 /**
  * Calculate metadata from user data
@@ -28,31 +29,18 @@ function calculateMetadata(userData) {
     };
   }
 
-  // Calculate days active
   const daysActive = userData.assigned_at 
     ? Math.floor((Date.now() - new Date(userData.assigned_at)) / (1000 * 60 * 60 * 24))
     : 0;
 
-  // Determine rank
   let rank = 'beyonder';
   if (userData.sequence === 0) rank = 'true_god';
   else if (userData.sequence <= 3) rank = 'angel';
   else if (userData.sequence <= 6) rank = 'saint';
 
-  // Calculate advancements
   const totalAdvancements = 9 - userData.sequence;
-
-  // Calculate lose control risk (higher sequence = lower risk if managed well)
-  const baseRisk = 5;
-  const sequenceRisk = (9 - userData.sequence) * 5;
-  const controlRisk = userData.lose_control_count ? userData.lose_control_count * 10 : 0;
-  const loseControlRisk = Math.min(100, baseRisk + sequenceRisk + controlRisk);
-
-  // Calculate pathway affinity (based on activity and progress)
-  const affinityBase = 50;
-  const affinityFromPoints = Math.min(30, (userData.spiritual_points || 0) / 10);
-  const affinityFromSequence = (9 - userData.sequence) * 2;
-  const pathwayAffinity = Math.min(100, Math.floor(affinityBase + affinityFromPoints + affinityFromSequence));
+  const loseControlRisk = Math.min(100, 5 + (9 - userData.sequence) * 5);
+  const pathwayAffinity = Math.min(100, Math.floor(50 + (userData.spiritual_points || 0) / 10 + (9 - userData.sequence) * 2));
 
   return {
     pathway: userData.pathway,
@@ -66,9 +54,6 @@ function calculateMetadata(userData) {
   };
 }
 
-/**
- * Update Discord linked role metadata
- */
 async function updateLinkedRole(accessToken, metadata) {
   try {
     const response = await fetch(
@@ -85,12 +70,6 @@ async function updateLinkedRole(accessToken, metadata) {
         }),
       }
     );
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('Failed to update linked role:', error);
-    }
-
     return response.ok;
   } catch (error) {
     console.error('Error updating linked role:', error);
@@ -120,14 +99,18 @@ router.get('/dashboard', async (req, res) => {
 
 // OAuth start - Linked Role
 router.get('/linked-role', (req, res) => {
-  const state = Math.random().toString(36).substring(7);
+  const state = Math.random().toString(36).substring(2) + Date.now().toString(36);
   
+  // Store state in cookie with proper settings for production
   res.cookie('oauth_state', state, {
-    maxAge: 300000,
-    signed: true,
+    maxAge: 300000, // 5 minutes
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production', // Only HTTPS in production
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' for cross-site in production
+    signed: false // Don't sign for simplicity
   });
+
+  console.log('🔐 Setting OAuth state:', state);
 
   const authUrl = new URL(`${DISCORD_API}/oauth2/authorize`);
   authUrl.searchParams.set('client_id', CLIENT_ID);
@@ -144,12 +127,63 @@ router.get('/linked-role', (req, res) => {
 router.get('/linked-role-callback', async (req, res) => {
   try {
     const { code, state } = req.query;
-    const storedState = req.signedCookies.oauth_state;
+    
+    console.log('📥 Received state:', state);
+    console.log('📥 Stored state:', req.cookies.oauth_state);
 
-    if (!storedState || storedState !== state) {
-      return res.status(403).send('❌ State verification failed. Please try again.');
+    // Get stored state from cookie
+    const storedState = req.cookies.oauth_state;
+
+    // Verify state
+    if (!storedState) {
+      console.error('❌ No stored state found in cookies');
+      return res.status(403).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Error - Aroodes</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+        </head>
+        <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+          <div class="text-center p-8">
+            <h1 class="text-4xl mb-4">❌ State Cookie Missing</h1>
+            <p class="mb-4">Please enable cookies and try again.</p>
+            <a href="/linked-role" class="px-6 py-3 bg-blue-600 rounded-lg inline-block hover:bg-blue-700">
+              Retry Connection
+            </a>
+          </div>
+        </body>
+        </html>
+      `);
     }
 
+    if (storedState !== state) {
+      console.error('❌ State mismatch!');
+      console.error('   Expected:', storedState);
+      console.error('   Received:', state);
+      return res.status(403).send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Error - Aroodes</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+        </head>
+        <body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+          <div class="text-center p-8">
+            <h1 class="text-4xl mb-4">❌ State Verification Failed</h1>
+            <p class="mb-4">Security check failed. Please try connecting again.</p>
+            <a href="/linked-role" class="px-6 py-3 bg-blue-600 rounded-lg inline-block hover:bg-blue-700">
+              Retry Connection
+            </a>
+          </div>
+        </body>
+        </html>
+      `);
+    }
+
+    console.log('✅ State verified successfully');
+
+    // Clear state cookie
     res.clearCookie('oauth_state');
 
     // Exchange code for tokens
@@ -166,7 +200,7 @@ router.get('/linked-role-callback', async (req, res) => {
     });
 
     if (!tokenRes.ok) {
-      console.error('Token failed:', await tokenRes.text());
+      console.error('Token exchange failed:', await tokenRes.text());
       return res.status(500).send('❌ Failed to obtain access token.');
     }
 
@@ -199,7 +233,7 @@ router.get('/linked-role-callback', async (req, res) => {
         username: user.username,
         discriminator: user.discriminator,
         avatar: user.avatar,
-        accessToken: tokens.access_token // Store for future metadata updates
+        accessToken: tokens.access_token
       },
       JWT_SECRET,
       { expiresIn: '7d' }
@@ -224,7 +258,6 @@ router.get('/linked-role-callback', async (req, res) => {
         <style>
           body {
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            font-family: 'Segoe UI', sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -258,26 +291,8 @@ router.get('/linked-role-callback', async (req, res) => {
                   <span class="text-gray-400">Rank:</span>
                   <span class="text-yellow-400 font-bold capitalize">${metadata.beyonder_rank}</span>
                 </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Advancements:</span>
-                  <span class="text-yellow-400 font-bold">${metadata.total_advancements}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Days Active:</span>
-                  <span class="text-yellow-400 font-bold">${metadata.days_active}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Control Stability:</span>
-                  <span class="text-${metadata.lose_control_risk > 50 ? 'red' : 'green'}-400 font-bold">${100 - metadata.lose_control_risk}%</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-400">Pathway Affinity:</span>
-                  <span class="text-yellow-400 font-bold">${metadata.pathway_affinity}%</span>
-                </div>
               </div>
             </div>
-
-            <p class="text-gray-400 mb-6">Your metadata will automatically sync with your Discord profile!</p>
 
             <button 
               onclick="window.location.href='/dashboard'"
@@ -294,35 +309,6 @@ router.get('/linked-role-callback', async (req, res) => {
   } catch (error) {
     console.error('OAuth error:', error);
     res.status(500).send('❌ Authentication failed.');
-  }
-});
-
-// API: Manually sync linked role (for when user data changes)
-router.post('/api/sync-linked-role', async (req, res) => {
-  const token = req.cookies.auth_token;
-  
-  if (!token) return res.status(401).json({ error: 'Not authenticated' });
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    if (!decoded.accessToken) {
-      return res.status(400).json({ error: 'No access token stored' });
-    }
-
-    const userData = await getUser(decoded.userId);
-    const metadata = calculateMetadata(userData);
-    
-    const success = await updateLinkedRole(decoded.accessToken, metadata);
-    
-    if (success) {
-      res.json({ success: true, metadata });
-    } else {
-      res.status(500).json({ error: 'Failed to sync' });
-    }
-
-  } catch (error) {
-    res.status(401).json({ error: 'Invalid token' });
   }
 });
 
@@ -352,6 +338,35 @@ router.get('/api/me', async (req, res) => {
       spiritualPoints: userData?.spiritual_points,
       metadata: calculateMetadata(userData)
     });
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// Sync linked role
+router.post('/api/sync-linked-role', async (req, res) => {
+  const token = req.cookies.auth_token;
+  
+  if (!token) return res.status(401).json({ error: 'Not authenticated' });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    if (!decoded.accessToken) {
+      return res.status(400).json({ error: 'No access token stored' });
+    }
+
+    const userData = await getUser(decoded.userId);
+    const metadata = calculateMetadata(userData);
+    
+    const success = await updateLinkedRole(decoded.accessToken, metadata);
+    
+    if (success) {
+      res.json({ success: true, metadata });
+    } else {
+      res.status(500).json({ error: 'Failed to sync' });
+    }
+
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });
   }
