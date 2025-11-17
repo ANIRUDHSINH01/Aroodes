@@ -91,6 +91,32 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Add pathway selection endpoint
+app.post('/api/select-pathway', async (req, res) => {
+  const token = req.cookies.auth_token;
+  
+  if (!token) return res.status(401).json({ error: 'Not authenticated' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'change-this');
+    const { pathwayId } = req.body;
+    
+    // Check if user already has pathway
+    const existingUser = await getUser(decoded.userId);
+    if (existingUser && existingUser.pathway) {
+      return res.status(400).json({ error: 'Pathway already selected' });
+    }
+    
+    // Set pathway
+    await setUserPathway(decoded.userId, decoded.username, pathwayId, decoded.discriminator, decoded.avatar);
+    
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to select pathway' });
+  }
+});
+
+
 // Handle slash commands
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
