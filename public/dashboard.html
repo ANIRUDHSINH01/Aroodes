@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aroodes - Lord of the Mysteries</title>
+  <title>Aroodes Dashboard - Lord of the Mysteries</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
   
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'IM Fell English', serif;
       background: linear-gradient(135deg, #0a0612, #1a0a2e, #16213e);
@@ -21,7 +21,6 @@
       animation: gradientShift 20s ease infinite;
       color: #e9e9e9;
       min-height: 100vh;
-      overflow-x: hidden;
     }
     @keyframes gradientShift {
       0%, 100% { background-position: 0% 50%; }
@@ -34,160 +33,49 @@
       border: 2px solid #d4af37;
       box-shadow: 0 8px 32px rgba(212, 175, 55, 0.2);
     }
-    .glow { box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); }
-    .glow-hover:hover { 
-      box-shadow: 0 0 40px rgba(212, 175, 55, 0.6);
-      transform: translateY(-8px) scale(1.02);
-    }
-    @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
-    @keyframes float { 
-      0%, 100% { transform: translateY(0px) rotate(0deg); } 
-      50% { transform: translateY(-15px) rotate(5deg); } 
-    }
-    .pulse { animation: pulse 3s ease-in-out infinite; }
-    .float { animation: float 4s ease-in-out infinite; }
-    .crimson-moon {
-      position: fixed;
-      top: 5%;
-      right: 5%;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, rgba(139, 0, 0, 0.6), rgba(75, 0, 130, 0.3) 40%, transparent 70%);
-      border-radius: 50%;
-      filter: blur(40px);
-      animation: pulse 8s ease-in-out infinite;
-      pointer-events: none;
-      z-index: 0;
-    }
-    .pathway-card {
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    .pathway-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, transparent, rgba(212, 175, 55, 0.1), transparent);
-      opacity: 0;
-      transition: opacity 0.4s;
-    }
-    .pathway-card:hover::before { opacity: 1; }
     .pathway-card:hover {
-      transform: translateY(-12px) rotateY(5deg);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 50px rgba(212, 175, 55, 0.6);
+      transform: translateY(-10px) scale(1.05);
+      box-shadow: 0 20px 40px rgba(212, 175, 55, 0.5);
     }
-    .tab-button {
-      position: relative;
-      overflow: hidden;
+    .profile-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid #d4af37;
     }
-    .tab-button::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      width: 0;
-      height: 3px;
-      background: #d4af37;
-      transition: all 0.3s;
-      transform: translateX(-50%);
-    }
-    .tab-button.active::after { width: 80%; }
-    .game-card {
-      background: linear-gradient(135deg, rgba(139, 0, 0, 0.3), rgba(75, 0, 130, 0.3));
-      border: 2px solid rgba(212, 175, 55, 0.5);
-      transition: all 0.3s;
-    }
-    .game-card:hover {
-      background: linear-gradient(135deg, rgba(139, 0, 0, 0.5), rgba(75, 0, 130, 0.5));
-      border-color: #d4af37;
-      transform: scale(1.05);
-    }
-    ::-webkit-scrollbar { width: 10px; }
-    ::-webkit-scrollbar-track { background: #0a0612; }
-    ::-webkit-scrollbar-thumb { 
-      background: linear-gradient(180deg, #d4af37, #8b4513);
-      border-radius: 5px;
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-20px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    .slide-in { animation: slideIn 0.5s ease forwards; }
   </style>
 </head>
 <body>
 
-  <div class="crimson-moon"></div>
-
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    const { useState, useEffect } = React;
     const API_BASE = window.location.origin + '/api';
 
     const PATHWAYS = [
-      { id: 'fool', name: 'The Fool', image: '/pathways/fool.png', color: 'from-yellow-600 to-amber-800', desc: 'Cunning, Deception, Miracles', seq0: 'The Fool' },
-      { id: 'error', name: 'Error', image: '/pathways/error.png', color: 'from-purple-600 to-indigo-900', desc: 'Fate, Probability, Parasites', seq0: 'Error' },
-      { id: 'door', name: 'Door', image: '/pathways/door.png.webp', color: 'from-cyan-600 to-blue-800', desc: 'Space, Teleportation, Records', seq0: 'Door' },
-      { id: 'visionary', name: 'Visionary', image: '/pathways/visionary.png.webp', color: 'from-purple-500 to-violet-800', desc: 'Consciousness, Dragons, Illusions', seq0: 'Visionary' },
-      { id: 'sun', name: 'The Sun', image: '/pathways/sun.png.webp', color: 'from-yellow-400 to-orange-600', desc: 'Light, Purification, Life', seq0: 'Eternal Blazing Sun' },
-      { id: 'tyrant', name: 'Tyrant', image: '/pathways/tyrant.png.webp', color: 'from-blue-600 to-cyan-900', desc: 'Lightning, Storms, Ocean', seq0: 'Tyrant' },
-      { id: 'death', name: 'Death', image: '/pathways/death.png', color: 'from-gray-600 to-black', desc: 'Undead, Spirits, Silence', seq0: 'Death' },
-      { id: 'moon', name: 'The Moon', image: '/pathways/moon.png', color: 'from-purple-400 to-indigo-800', desc: 'Madness, Beauty, Crimson Moon', seq0: 'Moon' },
-      { id: 'red_priest', name: 'Red Priest', image: '/pathways/red_priest.png', color: 'from-red-500 to-crimson-900', desc: 'War, Conspiracy, Strategy', seq0: 'Red Priest' },
-      { id: 'demoness', name: 'Demoness', image: '/pathways/demoness.png.webp', color: 'from-pink-500 to-purple-900', desc: 'Pleasure, Beauty, Calamity', seq0: 'Primordial Demoness' }
-    ];
-
-    const GAMES = [
-      { 
-        id: 'tarot', 
-        name: 'Tarot Divination', 
-        icon: '🃏', 
-        desc: 'Draw tarot cards to gain spiritual points',
-        reward: '10-50 points',
-        difficulty: 'Easy'
-      },
-      { 
-        id: 'ritual', 
-        name: 'Advancement Ritual', 
-        icon: '🕯️', 
-        desc: 'Complete mystical rituals to advance',
-        reward: 'Sequence advancement',
-        difficulty: 'Hard'
-      },
-      { 
-        id: 'acting', 
-        name: 'Acting Method', 
-        icon: '🎭', 
-        desc: 'Act your pathway to digest potions',
-        reward: '5-20 points',
-        difficulty: 'Medium'
-      },
-      { 
-        id: 'beyonder', 
-        name: 'Beyonder Quiz', 
-        icon: '📚', 
-        desc: 'Test your LOTM knowledge',
-        reward: '15-30 points',
-        difficulty: 'Medium'
-      },
-      { 
-        id: 'fog', 
-        name: 'Gray Fog Exploration', 
-        icon: '🌫️', 
-        desc: 'Venture into the mysterious fog',
-        reward: '20-100 points',
-        difficulty: 'Very Hard'
-      },
-      { 
-        id: 'gathering', 
-        name: 'Tarot Gathering', 
-        icon: '⭕', 
-        desc: 'Attend the mystical gathering above the gray fog',
-        reward: 'Special items',
-        difficulty: 'Medium'
-      }
+      { id: 'fool', name: 'The Fool', image: '/pathways/fool.png', desc: 'Cunning, Deception, Miracles' },
+      { id: 'error', name: 'Error', image: '/pathways/error.png', desc: 'Fate, Probability, Parasites' },
+      { id: 'door', name: 'Door', image: '/pathways/door.png.webp', desc: 'Space, Teleportation' },
+      { id: 'visionary', name: 'Visionary', image: '/pathways/visionary.png.webp', desc: 'Mind, Dragons' },
+      { id: 'sun', name: 'The Sun', image: '/pathways/sun.png.webp', desc: 'Light, Purification' },
+      { id: 'tyrant', name: 'Tyrant', image: '/pathways/tyrant.png.webp', desc: 'Lightning, Storms' },
+      { id: 'death', name: 'Death', image: '/pathways/death.png', desc: 'Undead, Spirits' },
+      { id: 'moon', name: 'The Moon', image: '/pathways/moon.png', desc: 'Madness, Beauty' },
+      { id: 'red_priest', name: 'Red Priest', image: '/pathways/red_priest.png', desc: 'War, Strategy' },
+      { id: 'demoness', name: 'Demoness', image: '/pathways/demoness.png.webp', desc: 'Beauty, Calamity' },
+      { id: 'hanged_man', name: 'Hanged Man', image: '/pathways/hanged_man.png', desc: 'Sea, Storms' },
+      { id: 'darkness', name: 'Darkness', image: '/pathways/darkness.png.webp', desc: 'Shadows, Stealth' },
+      { id: 'twilight', name: 'Twilight Giant', image: '/pathways/twilight_giant.png.webp', desc: 'Giants, Dawn' },
+      { id: 'white_tower', name: 'White Tower', image: '/pathways/white_tower.png.webp', desc: 'Knowledge' },
+      { id: 'mother', name: 'Mother', image: '/pathways/mother.png.webp', desc: 'Earth, Harvest' },
+      { id: 'abyss', name: 'Abyss', image: '/pathways/abyss.png.webp', desc: 'Evil, Desire' },
+      { id: 'chained', name: 'Chained', image: '/pathways/chained.png.webp', desc: 'Temperance' },
+      { id: 'justiciar', name: 'Justiciar', image: '/pathways/justiciar.png.webp', desc: 'Order, Law' },
+      { id: 'paragon', name: 'Paragon', image: '/pathways/paragon.png.webp', desc: 'Crafting' },
+      { id: 'black_emperor', name: 'Black Emperor', image: '/pathways/black_emperor.png.webp', desc: 'Order, Rules' },
+      { id: 'hermit', name: 'The Hermit', image: '/pathways/hermit.png.webp', desc: 'Knowledge' },
+      { id: 'wheel', name: 'Wheel of Fortune', image: '/pathways/wheel_of_fortune.png.webp', desc: 'Luck, Monsters' }
     ];
 
     function App() {
@@ -196,207 +84,188 @@
       const [stats, setStats] = useState(null);
       const [beyonders, setBeyonders] = useState([]);
       const [loading, setLoading] = useState(true);
-      const [selectedPathway, setSelectedPathway] = useState(null);
-      const [gameActive, setGameActive] = useState(null);
 
       useEffect(() => {
         fetchData();
+        const interval = setInterval(fetchData, 30000);
+        return () => clearInterval(interval);
       }, []);
 
       const fetchData = async () => {
         try {
-          const [userRes, statsRes, beyondersRes] = await Promise.all([
-            fetch(`${API_BASE}/me`).catch(() => ({ ok: false })),
-            fetch(`${API_BASE}/stats`),
-            fetch(`${API_BASE}/beyonders`)
-          ]);
-
-          if (userRes.ok) {
+          console.log('🔄 Fetching data...');
+          
+          // Fetch user
+          const userRes = await fetch(`${API_BASE}/me`).catch(() => null);
+          if (userRes && userRes.ok) {
             const userData = await userRes.json();
+            console.log('👤 User:', userData);
             setUser(userData);
           }
 
-          const [statsData, beyondersData] = await Promise.all([
-            statsRes.json(),
-            beyondersRes.json()
-          ]);
-
+          // Fetch stats
+          const statsRes = await fetch(`${API_BASE}/stats`);
+          const statsData = await statsRes.json();
+          console.log('📊 Stats:', statsData);
           setStats(statsData);
+
+          // Fetch beyonders
+          const beyondersRes = await fetch(`${API_BASE}/beyonders`);
+          const beyondersData = await beyondersRes.json();
+          console.log('👥 Beyonders:', beyondersData);
           setBeyonders(Array.isArray(beyondersData) ? beyondersData : []);
+
           setLoading(false);
         } catch (error) {
-          console.error('Error:', error);
+          console.error('❌ Error:', error);
           setLoading(false);
         }
       };
 
+      const getDiscordAvatar = (userId, avatar) => {
+        if (!userId || !avatar) return 'https://cdn.discordapp.com/embed/avatars/0.png';
+        return `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png?size=128`;
+      };
+
       return (
-        <div className="min-h-screen relative z-10">
-          <Navbar user={user} activeTab={activeTab} setActiveTab={setActiveTab} />
+        <div className="min-h-screen">
+          <Navbar user={user} getDiscordAvatar={getDiscordAvatar} activeTab={activeTab} setActiveTab={setActiveTab} />
           
           <main className="max-w-7xl mx-auto px-4 py-8">
             {loading ? (
-              <LoadingScreen />
+              <div className="text-center py-32">
+                <div className="text-8xl mb-8 animate-pulse">🌙</div>
+                <div className="text-4xl text-primary title-font">Loading...</div>
+              </div>
             ) : (
               <>
-                {activeTab === 'home' && <Home user={user} stats={stats} />}
-                {activeTab === 'pathways' && <PathwaySelection user={user} onSelect={setSelectedPathway} />}
-                {activeTab === 'games' && <Games user={user} onPlay={setGameActive} />}
-                {activeTab === 'beyonders' && <Beyonders beyonders={beyonders} />}
-                {activeTab === 'profile' && <Profile user={user} />}
+                {activeTab === 'home' && <Home user={user} stats={stats} beyonders={beyonders} />}
+                {activeTab === 'pathways' && <PathwaySelection user={user} pathways={PATHWAYS} onRefresh={fetchData} />}
+                {activeTab === 'games' && <Games user={user} onRefresh={fetchData} />}
+                {activeTab === 'beyonders' && <Beyonders beyonders={beyonders} getDiscordAvatar={getDiscordAvatar} />}
               </>
             )}
           </main>
-
-          {selectedPathway && (
-            <PathwayModal pathway={selectedPathway} onClose={() => setSelectedPathway(null)} user={user} />
-          )}
-
-          {gameActive && (
-            <GameModal game={gameActive} onClose={() => setGameActive(null)} user={user} />
-          )}
         </div>
       );
     }
 
-    function Navbar({ user, activeTab, setActiveTab }) {
-      const [menuOpen, setMenuOpen] = useState(false);
-
+    function Navbar({ user, getDiscordAvatar, activeTab, setActiveTab }) {
       return (
-        <nav className="glass sticky top-0 z-50 glow">
+        <nav className="glass sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-4">
-                <div className="text-4xl float">🌙</div>
+                <div className="text-4xl">🌙</div>
                 <div>
-                  <h1 className="text-2xl md:text-3xl title-font text-primary">Aroodes</h1>
-                  <p className="text-xs text-gray-400 hidden md:block italic">Above the Gray Fog</p>
+                  <h1 className="text-2xl md:text-3xl title-font" style={{color: '#d4af37'}}>Aroodes</h1>
+                  <p className="text-xs text-gray-400 hidden md:block">Above the Gray Fog</p>
                 </div>
               </div>
 
               {user && (
-                <div className="hidden lg:flex items-center gap-4 glass px-6 py-3 rounded-lg">
-                  <div className="text-right">
-                    <div className="font-bold text-primary">{user.username}</div>
+                <div className="flex items-center gap-4 glass px-4 py-2 rounded-lg">
+                  <div className="text-right hidden md:block">
+                    <div className="font-bold" style={{color: '#d4af37'}}>{user.username}</div>
                     <div className="text-xs text-gray-400 capitalize">
                       {user.pathway || 'No Pathway'} • Seq {user.sequence || 9}
                     </div>
                   </div>
-                  <div className="text-3xl">👤</div>
+                  <img 
+                    src={getDiscordAvatar(user.id, user.avatar)} 
+                    alt={user.username}
+                    className="profile-img"
+                  />
                 </div>
               )}
 
               <div className="hidden md:flex gap-2">
-                {['home', 'pathways', 'games', 'beyonders', user && 'profile'].filter(Boolean).map(tab => (
+                {['home', 'pathways', 'games', 'beyonders'].map(tab => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`tab-button px-4 py-2 rounded-lg transition capitalize ${
-                      activeTab === tab ? 'active bg-primary text-dark font-bold' : 'hover:bg-primary/20'
-                    }`}
-                  >
-                    {tab === 'home' && '🏠'}
-                    {tab === 'pathways' && '🎭'}
-                    {tab === 'games' && '🎮'}
-                    {tab === 'beyonders' && '👥'}
-                    {tab === 'profile' && '👤'}
-                    <span className="ml-2">{tab}</span>
-                  </button>
-                ))}
-                {!user ? (
-                  <a href="/login" className="px-4 py-2 rounded-lg bg-primary text-dark font-bold">Login</a>
-                ) : (
-                  <a href="/logout" className="px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30">Logout</a>
-                )}
-              </div>
-
-              <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-3xl text-primary">
-                {menuOpen ? '✕' : '☰'}
-              </button>
-            </div>
-
-            {menuOpen && (
-              <div className="md:hidden mt-4 space-y-2 slide-in">
-                {user && (
-                  <div className="glass px-4 py-3 rounded-lg mb-4">
-                    <div className="font-bold text-primary">{user.username}</div>
-                    <div className="text-xs text-gray-400">{user.pathway || 'No Pathway'} • Seq {user.sequence || 9}</div>
-                  </div>
-                )}
-                {['home', 'pathways', 'games', 'beyonders', user && 'profile'].filter(Boolean).map(tab => (
-                  <button
-                    key={tab}
-                    onClick={() => { setActiveTab(tab); setMenuOpen(false); }}
-                    className={`w-full text-left px-4 py-2 rounded-lg transition capitalize ${
-                      activeTab === tab ? 'bg-primary text-dark font-bold' : 'hover:bg-primary/20'
+                    className={`px-4 py-2 rounded-lg transition capitalize ${
+                      activeTab === tab ? 'bg-yellow-600 text-black font-bold' : 'hover:bg-yellow-600/20'
                     }`}
                   >
                     {tab}
                   </button>
                 ))}
+                {!user ? (
+                  <a href="/login" className="px-4 py-2 rounded-lg bg-yellow-600 text-black font-bold">Login</a>
+                ) : (
+                  <a href="/logout" className="px-4 py-2 rounded-lg bg-red-500/20">Logout</a>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </nav>
       );
     }
 
-    function LoadingScreen() {
-      return (
-        <div className="text-center py-32">
-          <div className="text-8xl mb-8 pulse">🌙</div>
-          <div className="text-4xl text-primary title-font animate-pulse">Loading the Gray Fog...</div>
-          <div className="mt-4 text-gray-400 italic">Above the Gray Fog, mysteries unfold...</div>
-        </div>
-      );
-    }
-
-    function Home({ user, stats }) {
+    function Home({ user, stats, beyonders }) {
       return (
         <div className="space-y-12">
-          <div className="text-center space-y-6">
-            <h1 className="text-5xl md:text-7xl title-font text-primary glow mb-4">
+          <div className="text-center">
+            <h1 className="text-5xl md:text-7xl title-font mb-4" style={{color: '#d4af37'}}>
               Welcome to Aroodes
             </h1>
-            <p className="text-xl md:text-2xl italic text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              "Above the Gray Fog, beneath the Crimson Moon, twenty-two pathways lead to divinity. 
-              Choose your path, advance through sequences, and ascend to godhood..."
+            <p className="text-xl italic text-gray-300 max-w-3xl mx-auto">
+              Choose your pathway, complete games, earn spiritual points, and ascend to godhood!
             </p>
-            
             {!user && (
-              <div className="pt-8">
-                <a href="/login" className="inline-block px-12 py-4 bg-gradient-to-r from-primary to-yellow-500 text-black font-bold text-xl rounded-xl hover:scale-110 transition shadow-2xl">
+              <div className="mt-8">
+                <a href="/login" className="inline-block px-12 py-4 bg-gradient-to-r from-yellow-600 to-yellow-500 text-black font-bold text-xl rounded-xl">
                   Begin Your Journey
                 </a>
               </div>
             )}
           </div>
 
-          {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <StatCard icon="🔮" title="Beyonders" value={stats.totalBeyonders || 0} />
-              <StatCard icon="👼" title="Angels" value={stats.angels || 0} />
-              <StatCard icon="⚜️" title="True Gods" value={stats.trueGods || 0} />
-              <StatCard icon="🎭" title="Pathways" value="22" />
-            </div>
-          )}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <StatCard icon="🔮" title="Total Beyonders" value={stats?.totalBeyonders || beyonders.length || 0} />
+            <StatCard icon="👼" title="Angels" value={stats?.angels || 0} />
+            <StatCard icon="⚜️" title="True Gods" value={stats?.trueGods || 0} />
+            <StatCard icon="🎭" title="Pathways" value="22" />
+          </div>
 
           {user && (
             <div className="glass rounded-2xl p-8">
-              <h2 className="text-3xl title-font text-primary mb-6">Your Progress</h2>
+              <h2 className="text-3xl title-font mb-6" style={{color: '#d4af37'}}>Your Progress</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <div className="text-gray-400 mb-2">Current Pathway</div>
-                  <div className="text-2xl font-bold text-primary capitalize">{user.pathway || 'None'}</div>
+                  <div className="text-gray-400 mb-2">Pathway</div>
+                  <div className="text-2xl font-bold capitalize" style={{color: '#d4af37'}}>
+                    {user.pathway || 'Not Selected'}
+                  </div>
                 </div>
                 <div>
-                  <div className="text-gray-400 mb-2">Sequence Level</div>
-                  <div className="text-2xl font-bold text-primary">{user.sequence || 9}</div>
+                  <div className="text-gray-400 mb-2">Sequence</div>
+                  <div className="text-2xl font-bold" style={{color: '#d4af37'}}>{user.sequence || 9}</div>
                 </div>
                 <div>
                   <div className="text-gray-400 mb-2">Spiritual Points</div>
-                  <div className="text-2xl font-bold text-primary">{user.spiritualPoints || 0}</div>
+                  <div className="text-2xl font-bold" style={{color: '#d4af37'}}>{user.spiritualPoints || 0}</div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {beyonders.length > 0 && (
+            <div>
+              <h2 className="text-3xl title-font mb-6 text-center" style={{color: '#d4af37'}}>
+                Recent Beyonders
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {beyonders.slice(0, 6).map(b => (
+                  <div key={b.user_id} className="glass rounded-xl p-6">
+                    <h3 className="font-bold mb-2">{b.username}</h3>
+                    <div className="text-sm space-y-1">
+                      <div>Pathway: <span className="text-primary capitalize">{b.pathway || 'None'}</span></div>
+                      <div>Sequence: <span className="text-primary">{b.sequence}</span></div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -404,302 +273,260 @@
       );
     }
 
-    function PathwaySelection({ user, onSelect }) {
-      const [filter, setFilter] = useState('all');
+    function PathwaySelection({ user, pathways, onRefresh }) {
+      const [selecting, setSelecting] = useState(false);
+      const [selectedPathway, setSelectedPathway] = useState(null);
+
+      const selectPathway = async (pathwayId) => {
+        if (!user) {
+          alert('Please login first!');
+          window.location.href = '/login';
+          return;
+        }
+
+        if (user.pathway) {
+          alert('You already have a pathway selected!');
+          return;
+        }
+
+        setSelecting(true);
+        try {
+          const response = await fetch('/api/select-pathway', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pathwayId })
+          });
+
+          if (response.ok) {
+            alert('Pathway selected successfully!');
+            onRefresh();
+          } else {
+            alert('Failed to select pathway');
+          }
+        } catch (error) {
+          alert('Error selecting pathway');
+        }
+        setSelecting(false);
+      };
 
       return (
         <div className="space-y-8">
           <div className="text-center">
-            <h2 className="text-4xl md:text-5xl title-font text-primary mb-4">Choose Your Pathway</h2>
-            <p className="text-gray-300 italic max-w-2xl mx-auto">
-              Select your beyonder pathway wisely. Each path offers unique abilities and leads to divinity.
+            <h2 className="text-4xl title-font mb-4" style={{color: '#d4af37'}}>
+              Choose Your Pathway
+            </h2>
+            <p className="text-gray-300 italic">
+              {user?.pathway 
+                ? `You've selected: ${user.pathway.toUpperCase()}`
+                : 'Select your beyonder pathway to begin your journey'
+              }
             </p>
           </div>
 
-          {user && user.pathway && (
-            <div className="glass rounded-xl p-6 border-primary">
-              <div className="text-center">
-                <div className="text-yellow-500 mb-2">⚠️ Current Pathway</div>
-                <div className="text-2xl font-bold text-primary capitalize">{user.pathway}</div>
-                <div className="text-sm text-gray-400 mt-2">Sequence {user.sequence}</div>
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {PATHWAYS.map((pathway, index) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {pathways.map(pathway => (
               <div
                 key={pathway.id}
-                onClick={() => onSelect(pathway)}
-                className="pathway-card glass rounded-xl p-6 cursor-pointer"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => !user?.pathway && setSelectedPathway(pathway)}
+                className="pathway-card glass rounded-xl p-4 cursor-pointer transition-all duration-300"
               >
-                <div className="h-40 mb-4 bg-black/30 rounded-lg overflow-hidden flex items-center justify-center">
+                <div className="h-32 mb-3 bg-black/30 rounded-lg overflow-hidden flex items-center justify-center">
                   <img src={pathway.image} alt={pathway.name} className="max-w-full max-h-full object-contain" />
                 </div>
-                <h3 className="title-font text-xl text-primary mb-2">{pathway.name}</h3>
-                <p className="text-sm text-gray-400 mb-3">{pathway.desc}</p>
-                <div className={`h-2 rounded-full bg-gradient-to-r ${pathway.color} mb-3`}></div>
-                <div className="text-xs text-gray-500 italic">Seq 0: {pathway.seq0}</div>
+                <h3 className="title-font text-center text-sm mb-1" style={{color: '#d4af37'}}>{pathway.name}</h3>
+                <p className="text-xs text-gray-400 text-center">{pathway.desc}</p>
               </div>
             ))}
           </div>
+
+          {selectedPathway && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90" onClick={() => setSelectedPathway(null)}>
+              <div className="glass rounded-2xl p-8 max-w-lg w-full" onClick={e => e.stopPropagation()}>
+                <h2 className="text-3xl title-font mb-4" style={{color: '#d4af37'}}>{selectedPathway.name}</h2>
+                <p className="text-gray-300 mb-6">{selectedPathway.desc}</p>
+                <div className="space-y-3">
+                  <button 
+                    onClick={() => selectPathway(selectedPathway.id)}
+                    disabled={selecting}
+                    className="w-full px-6 py-3 bg-yellow-600 text-black font-bold rounded-lg hover:bg-yellow-500 disabled:opacity-50"
+                  >
+                    {selecting ? 'Selecting...' : 'Select This Pathway'}
+                  </button>
+                  <button 
+                    onClick={() => setSelectedPathway(null)}
+                    className="w-full px-6 py-3 border border-gray-600 rounded-lg hover:bg-gray-800"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
 
-    function Games({ user, onPlay }) {
+    function Games({ user, onRefresh }) {
+      const [playing, setPlaying] = useState(null);
+      const [reward, setReward] = useState(null);
+
+      const games = [
+        { id: 'tarot', name: 'Tarot Divination', icon: '🃏', reward: '10-30 points', time: 2 },
+        { id: 'acting', name: 'Acting Method', icon: '🎭', reward: '15-40 points', time: 3 },
+        { id: 'quiz', name: 'LOTM Quiz', icon: '📚', reward: '20-50 points', time: 4 },
+        { id: 'watch_ad', name: 'Watch Ad', icon: '📺', reward: '50-100 points', time: 30 }
+      ];
+
+      const playGame = (game) => {
+        if (!user) {
+          alert('Please login first!');
+          return;
+        }
+
+        setPlaying(game);
+        setReward(null);
+
+        setTimeout(() => {
+          const min = parseInt(game.reward.split('-')[0]);
+          const max = parseInt(game.reward.split('-')[1]);
+          const points = Math.floor(Math.random() * (max - min + 1)) + min;
+          
+          setReward(points);
+          setPlaying(null);
+
+          // Update user points (simulate)
+          setTimeout(() => {
+            setReward(null);
+            onRefresh();
+          }, 3000);
+        }, game.time * 1000);
+      };
+
       return (
         <div className="space-y-8">
           <div className="text-center">
-            <h2 className="text-4xl md:text-5xl title-font text-primary mb-4">Mystical Games</h2>
-            <p className="text-gray-300 italic">Complete games to earn spiritual points and advance</p>
+            <h2 className="text-4xl title-font mb-4" style={{color: '#d4af37'}}>Mystical Games</h2>
+            <p className="text-gray-300">Complete games to earn spiritual points!</p>
           </div>
 
           {!user && (
             <div className="glass rounded-xl p-8 text-center">
-              <div className="text-5xl mb-4">🔒</div>
-              <h3 className="text-2xl font-bold mb-2">Login Required</h3>
-              <p className="text-gray-400 mb-6">You need to login to play games and earn rewards</p>
-              <a href="/login" className="inline-block px-8 py-3 bg-primary text-dark font-bold rounded-lg">
+              <div className="text-6xl mb-4">🔒</div>
+              <h3 className="text-2xl font-bold mb-4">Login Required</h3>
+              <a href="/login" className="inline-block px-8 py-3 bg-yellow-600 text-black font-bold rounded-lg">
                 Login Now
               </a>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {GAMES.map(game => (
-              <div key={game.id} className="game-card rounded-xl p-6 cursor-pointer" onClick={() => user && onPlay(game)}>
-                <div className="text-6xl mb-4 text-center">{game.icon}</div>
-                <h3 className="text-2xl title-font text-primary mb-3 text-center">{game.name}</h3>
-                <p className="text-gray-300 mb-4 text-center">{game.desc}</p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Reward:</span>
-                    <span className="text-primary font-bold">{game.reward}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Difficulty:</span>
-                    <span className={`font-bold ${
-                      game.difficulty === 'Easy' ? 'text-green-400' :
-                      game.difficulty === 'Medium' ? 'text-yellow-400' :
-                      game.difficulty === 'Hard' ? 'text-orange-400' : 'text-red-400'
-                    }`}>{game.difficulty}</span>
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {games.map(game => (
+              <div key={game.id} className="glass rounded-xl p-6 text-center">
+                <div className="text-6xl mb-4">{game.icon}</div>
+                <h3 className="text-xl title-font mb-2" style={{color: '#d4af37'}}>{game.name}</h3>
+                <p className="text-sm text-gray-400 mb-2">Reward: {game.reward}</p>
+                <p className="text-xs text-gray-500 mb-4">Time: {game.time}s</p>
                 {user && (
-                  <button className="w-full mt-4 px-4 py-2 bg-primary text-dark font-bold rounded-lg hover:bg-yellow-500">
-                    Play Now
+                  <button
+                    onClick={() => playGame(game)}
+                    disabled={playing}
+                    className="w-full px-4 py-2 bg-yellow-600 text-black font-bold rounded-lg hover:bg-yellow-500 disabled:opacity-50"
+                  >
+                    {playing?.id === game.id ? 'Playing...' : 'Play'}
                   </button>
                 )}
               </div>
             ))}
           </div>
+
+          {reward && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
+              <div className="glass rounded-2xl p-12 text-center">
+                <div className="text-8xl mb-6">✨</div>
+                <h2 className="text-4xl title-font mb-4" style={{color: '#d4af37'}}>
+                  +{reward} Points!
+                </h2>
+                <p className="text-gray-300">Spiritual points earned!</p>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
 
-    function Beyonders({ beyonders }) {
+    function Beyonders({ beyonders, getDiscordAvatar }) {
       const [search, setSearch] = useState('');
-      const filtered = beyonders.filter(b => 
-        b.username.toLowerCase().includes(search.toLowerCase()) ||
-        (b.pathway && b.pathway.toLowerCase().includes(search.toLowerCase()))
+      const filtered = beyonders.filter(b =>
+        b.username?.toLowerCase().includes(search.toLowerCase()) ||
+        b.pathway?.toLowerCase().includes(search.toLowerCase())
       );
 
       return (
         <div className="space-y-8">
           <div className="text-center">
-            <h2 className="text-4xl title-font text-primary mb-4">All Beyonders ({beyonders.length})</h2>
+            <h2 className="text-4xl title-font mb-4" style={{color: '#d4af37'}}>
+              All Beyonders ({beyonders.length})
+            </h2>
             <input
               type="text"
-              placeholder="🔍 Search beyonders..."
+              placeholder="🔍 Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="max-w-md w-full px-6 py-3 rounded-lg glass border border-primary/30 outline-none focus:border-primary"
+              className="max-w-md w-full px-6 py-3 rounded-lg glass border border-yellow-600/30 outline-none"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map(b => (
-              <div key={b.user_id} className="glass rounded-xl p-6 glow-hover transition">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-bold">{b.username}</h3>
-                  {b.sequence === 0 && <span className="bg-red-500 px-2 py-1 rounded text-xs">⚜️ GOD</span>}
-                  {b.sequence <= 3 && b.sequence > 0 && <span className="bg-yellow-500 text-dark px-2 py-1 rounded text-xs">👼 ANGEL</span>}
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Pathway:</span>
-                    <span className="text-primary capitalize font-bold">{b.pathway || 'None'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Sequence:</span>
-                    <span className="text-primary font-bold">{b.sequence}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Points:</span>
-                    <span className="text-primary font-bold">{b.spiritual_points || 0}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    function Profile({ user }) {
-      if (!user) {
-        return (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-6">🔒</div>
-            <h2 className="text-3xl title-font mb-4">Not Logged In</h2>
-            <a href="/login" className="inline-block px-8 py-3 bg-primary text-dark font-bold rounded-lg">Login</a>
-          </div>
-        );
-      }
-
-      return (
-        <div className="max-w-4xl mx-auto space-y-8">
-          <div className="glass rounded-2xl p-8 text-center">
-            <div className="text-8xl mb-6">👤</div>
-            <h2 className="text-4xl title-font text-primary mb-2">{user.username}</h2>
-            <div className="text-gray-400 capitalize">{user.pathway || 'No Pathway Selected'}</div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="glass rounded-xl p-6">
-              <h3 className="text-2xl title-font text-primary mb-4">Progression</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span>Sequence:</span>
-                  <span className="text-primary font-bold">{user.sequence || 9}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Spiritual Points:</span>
-                  <span className="text-primary font-bold">{user.spiritualPoints || 0}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Rank:</span>
-                  <span className="text-primary font-bold capitalize">
-                    {user.sequence === 0 ? 'True God' : user.sequence <= 3 ? 'Angel' : 'Beyonder'}
-                  </span>
-                </div>
-              </div>
+          {filtered.length === 0 ? (
+            <div className="text-center py-20">
+              <div className="text-6xl mb-4">👥</div>
+              <p className="text-xl text-gray-400">
+                {search ? 'No beyonders found' : 'No beyonders yet. Be the first!'}
+              </p>
             </div>
-
-            <div className="glass rounded-xl p-6">
-              <h3 className="text-2xl title-font text-primary mb-4">Actions</h3>
-              <div className="space-y-3">
-                <a href="/linked-role" className="block w-full px-4 py-3 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg text-center transition">
-                  🔗 Connect Discord
-                </a>
-                <button className="w-full px-4 py-3 bg-primary/20 hover:bg-primary/30 rounded-lg transition">
-                  🎭 Change Pathway
-                </button>
-                <a href="/logout" className="block w-full px-4 py-3 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-center transition">
-                  🚪 Logout
-                </a>
-              </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filtered.map(b => (
+                <div key={b.user_id} className="glass rounded-xl p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <img 
+                      src={getDiscordAvatar(b.user_id, b.avatar)} 
+                      alt={b.username}
+                      className="profile-img"
+                    />
+                    <div>
+                      <h3 className="font-bold">{b.username}</h3>
+                      {b.sequence === 0 && <span className="text-xs bg-red-500 px-2 py-1 rounded">⚜️ GOD</span>}
+                      {b.sequence <= 3 && b.sequence > 0 && <span className="text-xs bg-yellow-500 text-black px-2 py-1 rounded">👼 ANGEL</span>}
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Pathway:</span>
+                      <span className="capitalize" style={{color: '#d4af37'}}>{b.pathway || 'None'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Sequence:</span>
+                      <span style={{color: '#d4af37'}}>{b.sequence}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Points:</span>
+                      <span style={{color: '#d4af37'}}>{b.spiritual_points || 0}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
       );
     }
 
     function StatCard({ icon, title, value }) {
       return (
-        <div className="glass rounded-xl p-6 glow-hover transition text-center">
-          <div className="text-5xl mb-3 float">{icon}</div>
+        <div className="glass rounded-xl p-6 text-center transition-all duration-300 hover:scale-105">
+          <div className="text-5xl mb-3">{icon}</div>
           <div className="text-gray-400 text-sm mb-1">{title}</div>
-          <div className="text-3xl font-bold text-primary">{value}</div>
-        </div>
-      );
-    }
-
-    function PathwayModal({ pathway, onClose, user }) {
-      return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90" onClick={onClose}>
-          <div className="glass rounded-2xl p-8 max-w-2xl w-full" onClick={e => e.stopPropagation()}>
-            <button onClick={onClose} className="float-right text-3xl text-primary">✕</button>
-            
-            <div className="text-center mb-6">
-              <div className="h-48 mb-6 flex items-center justify-center">
-                <img src={pathway.image} alt={pathway.name} className="max-h-full" />
-              </div>
-              <h2 className="text-4xl title-font text-primary mb-4">{pathway.name}</h2>
-              <p className="text-xl text-gray-300 mb-2">{pathway.desc}</p>
-              <div className="text-sm text-gray-400 italic">Sequence 0: {pathway.seq0}</div>
-            </div>
-
-            <div className={`h-3 rounded-full bg-gradient-to-r ${pathway.color} mb-6`}></div>
-
-            {user && !user.pathway && (
-              <button className="w-full px-8 py-4 bg-primary text-dark font-bold rounded-xl hover:bg-yellow-500 text-xl">
-                Select This Pathway
-              </button>
-            )}
-
-            {user && user.pathway && (
-              <div className="text-center text-gray-400">
-                You've already selected the <span className="text-primary capitalize">{user.pathway}</span> pathway
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    function GameModal({ game, onClose, user }) {
-      const [playing, setPlaying] = useState(false);
-      const [reward, setReward] = useState(null);
-
-      const playGame = () => {
-        setPlaying(true);
-        setTimeout(() => {
-          const points = Math.floor(Math.random() * 40) + 10;
-          setReward(points);
-          setPlaying(false);
-        }, 2000);
-      };
-
-      return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90" onClick={onClose}>
-          <div className="glass rounded-2xl p-8 max-w-lg w-full" onClick={e => e.stopPropagation()}>
-            <button onClick={onClose} className="float-right text-3xl text-primary">✕</button>
-            
-            <div className="text-center">
-              <div className="text-8xl mb-6">{game.icon}</div>
-              <h2 className="text-3xl title-font text-primary mb-4">{game.name}</h2>
-              <p className="text-gray-300 mb-6">{game.desc}</p>
-
-              {!reward && !playing && (
-                <button 
-                  onClick={playGame}
-                  className="w-full px-8 py-4 bg-primary text-dark font-bold rounded-xl hover:bg-yellow-500 text-xl"
-                >
-                  Start Game
-                </button>
-              )}
-
-              {playing && (
-                <div className="py-8">
-                  <div className="text-6xl pulse">🌀</div>
-                  <div className="mt-4 text-xl">Playing...</div>
-                </div>
-              )}
-
-              {reward && (
-                <div className="py-8">
-                  <div className="text-6xl mb-4">✨</div>
-                  <div className="text-3xl font-bold text-primary mb-2">+{reward} Points!</div>
-                  <button onClick={onClose} className="mt-4 px-6 py-2 bg-primary text-dark font-bold rounded-lg">
-                    Close
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+          <div className="text-3xl font-bold" style={{color: '#d4af37'}}>{value}</div>
         </div>
       );
     }
