@@ -167,7 +167,7 @@ client.on(Events.MessageCreate, async (message) => {
         return message.reply({ embeds: [embed] });
       }
 
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
       
       const prompt = `You are Aroodes (Arrodes), the sentient magic mirror from Lord of the Mysteries.
 
