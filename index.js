@@ -147,11 +147,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-// Handle @mentions for AI chat
+// Handle @mentions for AI chat and staff auto-reply
 client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
   if (!message.guild) return;
   
+  // Check if specific user (1390868532669054976) is mentioned - AUTO REPLY
+  const STAFF_USER_ID = '1390868532669054976';
+  if (message.mentions.users.has(STAFF_USER_ID)) {
+    const autoReplyEmbed = new EmbedBuilder()
+      .setColor(0x5865F2)
+      .setTitle('📢 Auto Reply')
+      .setDescription('For general questions, please contact the staff team.\n\nThey will assist you shortly!')
+      .setFooter({ text: 'This is an automated message' })
+      .setTimestamp();
+    
+    return message.reply({ embeds: [autoReplyEmbed] });
+  }
+  
+  // AI chat for bot mentions
   if (message.mentions.has(client.user)) {
     try {
       await message.channel.sendTyping();
@@ -227,9 +241,10 @@ client.once(Events.ClientReady, async () => {
     console.error('❌ Linked Roles: Failed');
   }
   
+  // Set DND (Do Not Disturb) status
   client.user.setPresence({
     activities: [{ name: 'Above the Gray Fog', type: 3 }],
-    status: 'online'
+    status: 'dnd'
   });
   
   console.log('\n🌙 Aroodes is ready!\n');
