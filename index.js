@@ -153,7 +153,7 @@ client.on(Events.MessageCreate, async (message) => {
   if (!message.guild) return;
   
   // Check if specific user (1390868532669054976) is mentioned - AUTO REPLY
-  const STAFF_USER_ID = '1390868532669054976';
+  const STAFF_USER_ID = '92272626622626';
   if (message.mentions.users.has(STAFF_USER_ID)) {
     const autoReplyEmbed = new EmbedBuilder()
       .setColor(0x5865F2)
