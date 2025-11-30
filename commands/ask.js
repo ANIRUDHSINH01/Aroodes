@@ -29,7 +29,7 @@ FORMAT:
 3. End with a mystical warning.`;
 
 // =======================
-// RANDOM ANSWERS + PUNISHMENTS
+// RANDOM PUNISHMENTS
 // =======================
 const punishments = [
   "⚡ *A crackle of spiritual lightning scorches the air around you.*",
@@ -47,18 +47,23 @@ export default {
         .setName('question')
         .setDescription('Your question for Aroodes')
         .setRequired(true)
+        .setMaxLength(500)
     ),
 
   async execute(interaction) {
+    // =======================
+    // DEFER IMMEDIATELY (prevents timeout)
+    // =======================
+    await interaction.deferReply();
+
+    const userId = interaction.user.id;
+    const now = Date.now();
 
     // =======================
     // HANDLE COOLDOWN
     // =======================
-    const userId = interaction.user.id;
-    const now = Date.now();
-
     if (cooldowns.has(userId)) {
-      const expires = cooldowns.get(userId) + COOLDOWN_MS;
+      const expires = cooldowns.get(userId);
 
       if (now < expires) {
         const remaining = Math.ceil((expires - now) / 1000);
@@ -67,29 +72,29 @@ export default {
           .setColor(0xff0000)
           .setTitle('⏳ Aroodes Refuses')
           .setDescription(
-            `“Great Master… even mirrors need rest.”\n\nYou must wait **${remaining}s** before asking again.`
+            `"Great Master… even mirrors need rest."\n\nYou must wait **${remaining}s** before asking again.`
           )
           .setFooter({ text: 'Aroodes dislikes being overworked.' });
 
-        return interaction.reply({ embeds: [cdEmbed], ephemeral: true });
+        return interaction.editReply({ embeds: [cdEmbed] });
+      } else {
+        cooldowns.delete(userId);
       }
     }
 
-    cooldowns.set(userId, now);
-    setTimeout(() => cooldowns.delete(userId), COOLDOWN_MS);
+    // Set new cooldown
+    cooldowns.set(userId, now + COOLDOWN_MS);
 
     // =======================
     // NORMAL /ASK LOGIC
     // =======================
-    await interaction.deferReply();
-
     try {
       const question = interaction.options.getString('question');
       const userData = await getUser(interaction.user.id);
 
-      // User context
+      // User context with null safety
       let userContext = '';
-      if (userData?.pathway) {
+      if (userData?.pathway && PATHWAYS[userData.pathway.toUpperCase()]) {
         const pathway = PATHWAYS[userData.pathway.toUpperCase()];
         const seqInfo = getSequence(pathway, userData.sequence);
 
@@ -98,15 +103,28 @@ export default {
         userContext = `\n\nUser Context: This user is not yet a Beyonder.`;
       }
 
-      // Gemini generation
+      // =======================
+      // GEMINI API CALL
+      // =======================
       const model = genAI.getGenerativeModel({
-        model: 'gemini-2.0-flash'
+        model: 'gemini-1.5-flash'
       });
 
       const prompt = `${AROODES_PERSONALITY}${userContext}\n\nUser Question: "${question}"\n\nAroodes Response:`;
 
       const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const response = await result.response;
+      let text = response.text();
+
+      // Validate response
+      if (!text || text.trim().length === 0) {
+        throw new Error('Aroodes remains silent...');
+      }
+
+      // Truncate if exceeds Discord embed limit
+      if (text.length > 1800) {
+        text = text.substring(0, 1800) + '\n\n*...The mirror\'s reflection fades mysteriously...*';
+      }
 
       // =======================
       // 30% CHANCE OF PUNISHMENT
@@ -132,13 +150,14 @@ export default {
         )
         .setFooter({
           text: punished
-            ? 'Aroodes whispers: “Curiosity carries a price…”'
+            ? 'Aroodes whispers: "Curiosity carries a price…"'
             : 'The mirror reflects both truth and mystery...',
           iconURL: interaction.user.displayAvatarURL()
         })
         .setTimestamp();
 
-      if (userData?.pathway) {
+      // Add Beyonder status field if applicable
+      if (userData?.pathway && PATHWAYS[userData.pathway.toUpperCase()]) {
         const pathway = PATHWAYS[userData.pathway.toUpperCase()];
         const seqInfo = getSequence(pathway, userData.sequence);
 
@@ -149,10 +168,12 @@ export default {
         });
       }
 
+      // Add punishment field if triggered
       if (punished) {
         embed.addFields({
           name: '⚠️ Punishment Incurred',
-          value: punishmentText
+          value: punishmentText,
+          inline: false
         });
       }
 
@@ -170,7 +191,17 @@ export default {
         )
         .setFooter({ text: 'Try again later, seeker of secrets.' });
 
-      await interaction.editReply({ embeds: [errorEmbed] });
+      // Safe error reply handling
+      try {
+        if (interaction.deferred || interaction.replied) {
+          await interaction.editReply({ embeds: [errorEmbed] });
+        } else {
+          await interaction.reply({ embeds: [errorEmbed] });
+        }
+      } catch (replyError) {
+        console.error('Could not send error message:', replyError.message);
+      }
     }
   }
 };
+          
